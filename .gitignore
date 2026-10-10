@@ -1,0 +1,23 @@
+# Credenciales locales: mantener la contraseña de Gmail fuera del repositorio.
+.env
+.env.*
+!.env.example
+/facturacion-privado/
+/config/correo.local.php
+/config/database.local.php
+
+# Registros, temporales y exportaciones de datos reales.
+*.log
+*.tmp
+*.bak
+*.backup.sql
+*.dump.sql
+/tmp/
+/output/
+/backups/
+
+# Configuración personal de editores y archivos del sistema.
+/.idea/
+/.vscode/
+Thumbs.db
+.DS_Store
