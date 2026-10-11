@@ -45,24 +45,25 @@ function enviarCorreo(PDO $pdo, int $id): string {
         $pdo->prepare('UPDATE correos SET destinatario=? WHERE id=?')->execute([$correo['destinatario'],$id]);
     }
     if (!filter_var($correo['destinatario'], FILTER_VALIDATE_EMAIL) || !filter_var($config['remitente'], FILTER_VALIDATE_EMAIL)) return 'pendiente';
-    if (!$config['smtp_preparado'] || strcasecmp($config['remitente'],$transporte['smtp_usuario']) !== 0) return 'pendiente';
+    if (!$config['smtp_preparado']) return 'pendiente';
 
-    /* Transporte autenticado Gmail con STARTTLS y verificación de certificados. */
+    /* Transporte SMTP autenticado con TLS y verificación de certificados. */
     require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
     require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
     require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
     try {
         $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->Port = 587;
+        $mail->Host = $transporte['smtp_host'];
+        $mail->Port = (int)$transporte['smtp_puerto'];
         $mail->SMTPAuth = true;
-        $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->SMTPSecure = $transporte['smtp_cifrado'];
+        $mail->AuthType = $transporte['smtp_auth'];
         $mail->Username = $transporte['smtp_usuario'];
         $mail->Password = $transporte['smtp_clave'];
         $mail->Timeout = 12;
         $mail->CharSet = 'UTF-8';
-        $mail->setFrom($transporte['smtp_usuario'],'Sistema de facturación');
+        $mail->setFrom($config['remitente'],'Sistema de facturación');
         $mail->addAddress($correo['destinatario']);
         $mail->Subject = $correo['asunto'];
         $mail->Body = $correo['cuerpo'];
@@ -73,7 +74,7 @@ function enviarCorreo(PDO $pdo, int $id): string {
         $estado = $mail->send() ? 'enviado' : 'fallido';
     } catch (Throwable $error) {
         $estado = 'fallido';
-        error_log('No se pudo enviar el correo de facturación ' . $id . '. Revise la cuenta Gmail y la conexión SMTP.');
+        error_log('No se pudo enviar el correo de facturación ' . $id . '. Revise las credenciales y la conexión SMTP.');
     }
     $pdo->prepare('UPDATE correos SET estado=?, intentos=intentos+1 WHERE id=?')->execute([$estado, $id]);
     return $estado;

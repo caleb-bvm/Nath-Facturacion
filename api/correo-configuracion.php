@@ -6,21 +6,29 @@ function configuracionCorreo(PDO $pdo): array {
     $inicial = require __DIR__ . '/../config/correo.php';
     $guardada = $pdo->query('SELECT jefe,remitente FROM configuracion_correo WHERE id=1')->fetch(PDO::FETCH_ASSOC);
     /* Mostrar el problema de configuración sin revelar el contenido de la clave. */
-    if (!filter_var($inicial['smtp_usuario'],FILTER_VALIDATE_EMAIL)) {
-        $estado = 'Falta configurar la dirección Gmail que enviará los mensajes.';
+    if (!filter_var($inicial['smtp_host'],FILTER_VALIDATE_DOMAIN,FILTER_FLAG_HOSTNAME)) {
+        $estado = 'Configure un servidor SMTP válido.';
+    } elseif (filter_var($inicial['smtp_puerto'],FILTER_VALIDATE_INT,['options'=>['min_range'=>1,'max_range'=>65535]]) === false) {
+        $estado = 'Configure un puerto SMTP válido (1 a 65535).';
+    } elseif (!in_array($inicial['smtp_cifrado'],['ssl','tls'],true)) {
+        $estado = 'Configure TLS implícito (ssl) o STARTTLS (tls) para el servidor SMTP.';
+    } elseif (!in_array($inicial['smtp_auth'],['PLAIN','LOGIN'],true)) {
+        $estado = 'Configure la autenticación SMTP como PLAIN o LOGIN.';
+    } elseif (trim($inicial['smtp_usuario']) === '') {
+        $estado = 'Falta configurar el usuario SMTP en el archivo privado o en el servidor.';
     } elseif ($inicial['smtp_clave'] === '') {
-        $estado = 'Falta pegar la contraseña de aplicación de Gmail en el archivo privado.';
-    } elseif (strlen($inicial['smtp_clave']) !== 16) {
-        $estado = 'La contraseña de aplicación de Gmail debe tener 16 caracteres, sin contar los espacios. No use la contraseña habitual de Gmail.';
+        $estado = 'Falta configurar la contraseña SMTP en el archivo privado o en el servidor.';
+    } elseif (!filter_var($inicial['remitente'],FILTER_VALIDATE_EMAIL)) {
+        $estado = 'Falta configurar una dirección de correo remitente válida.';
     } else {
-        $estado = 'Gmail configurado. Use el correo de prueba para comprobar el envío.';
+        $estado = '';
     }
     /* Devolver solo campos públicos: jamás exponer la contraseña por la API. */
     return [
         'jefe' => $guardada['jefe'] ?? $inicial['jefe'],
-        'remitente' => !empty($guardada['remitente']) ? $guardada['remitente'] : $inicial['remitente'],
-        'smtp_preparado' => filter_var($inicial['smtp_usuario'],FILTER_VALIDATE_EMAIL) !== false && strlen($inicial['smtp_clave']) === 16,
-        'smtp_mensaje' => $estado,
+        'remitente' => $inicial['remitente'],
+        'smtp_preparado' => $estado === '',
+        'smtp_mensaje' => $estado ?: 'SMTP configurado. Use el correo de prueba para comprobar el envío.',
     ];
 }
 

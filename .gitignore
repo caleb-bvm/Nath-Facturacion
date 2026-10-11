@@ -1,4 +1,4 @@
-# Credenciales locales: mantener la contraseña de Gmail fuera del repositorio.
+# Credenciales locales: mantener la contraseña SMTP fuera del repositorio.
 .env
 .env.*
 !.env.example
