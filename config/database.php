@@ -2,7 +2,6 @@
 /* Bloque principal: config/database.php. Responsabilidades separadas por secciones. */
 
 // Configuración de la conexión local con MySQL.
-require_once __DIR__ . '/entorno.php';
 define('DB_HOST', getenv('FACTURACION_DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('FACTURACION_DB_NAME') ?: 'facturacion_db');
 define('DB_USER', getenv('FACTURACION_DB_USER') ?: 'root');
