@@ -1,0 +1,17 @@
+**
+!Dockerfile
+!index.html
+!assets/
+!assets/**
+!api/
+!api/**
+!config/
+!config/database.php
+!config/correo.php
+!vendor/
+!vendor/**
+!database/
+!database/schema.sql
+!database/crear-admin.php
+!docker/
+!docker/**

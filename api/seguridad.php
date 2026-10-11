@@ -2,7 +2,7 @@
 require_once __DIR__ . '/correo-configuracion.php';
 /* Sesiones y protección de escrituras: la autorización siempre vive en PHP. */
 date_default_timezone_set('America/El_Salvador');
-session_set_cookie_params(['httponly' => true, 'samesite' => 'Strict', 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off']);
+session_set_cookie_params(['httponly' => true, 'samesite' => 'Strict', 'secure' => getenv('FACTURACION_COOKIE_SECURE') === '1' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')]);
 session_start();
 
 /* Restricciones compartidas por empleados y administrador supremo.
