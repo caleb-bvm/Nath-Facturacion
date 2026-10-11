@@ -1,23 +1,34 @@
 /* Comunicación, escape de datos y navegación de paneles. */
 function peticionPanel(accion, datos) {
-    return BaseDatos.solicitar(`${API_URL}?action=${accion}`, datos === undefined ? {} : {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos)
-    });
+    return datos === undefined
+        ? BaseDatos.solicitar(`${API_URL}?action=${accion}`)
+        : BaseDatos.enviar(accion, datos);
 }
 function escaparHtml(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function configurarPanel() {
-    const supremo = vendedorActual.rol === 'supremo';
-    document.getElementById('panel-titulo').textContent = supremo ? 'Panel de administrador supremo' : 'Panel de usuario';
-    document.getElementById('btn-admin').hidden = !supremo;
-    document.getElementById('btn-productos').hidden = !supremo;
+    const admin = vendedorActual.rol === 'admin';
+    document.getElementById('panel-titulo').textContent = admin ? 'Panel de administrador' : 'Panel de usuario';
+    document.getElementById('btn-admin').hidden = !admin;
+    document.getElementById('btn-productos').hidden = !admin;
     document.getElementById('login-error').textContent = '';
     mostrarHorarioUsuario(vendedorActual);
 }
 /* Horario personal de solo consulta: nunca enviar estos datos como una modificación.
- * El permiso para guardar horarios se valida también en PHP mediante requerirSupremo. */
+ * El permiso para guardar horarios se valida también en PHP mediante requerirAdmin. */
 function mostrarHorarioUsuario(usuario) {
+    const admin = usuario.rol === 'admin';
+    document.getElementById('horario-nota').textContent = admin
+        ? 'El administrador activo tiene acceso permanente.'
+        : 'Hora de El Salvador. El final del turno no está incluido. Solo el administrador puede cambiar tu horario.';
+    if (admin) {
+        document.getElementById('horario-dias').textContent = 'Todos los días';
+        document.getElementById('horario-horas').textContent = '24 horas';
+        document.getElementById('horario-fechas').textContent = 'Sin restricciones de fechas';
+        document.getElementById('horario-turno-nocturno').hidden = true;
+        return;
+    }
     const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const dias = new Set(String(usuario.dias || '').split(',').map(Number));
     document.getElementById('horario-dias').textContent = nombresDias
@@ -33,6 +44,7 @@ function mostrarHorarioUsuario(usuario) {
     document.getElementById('horario-fechas').textContent = `${desde}; ${hasta}.`;
 }
 function abrirModulo(id) {
+    window.scrollTo(0, 0);
     document.querySelectorAll('.modulo').forEach(e => { e.hidden = e.id !== id; });
     document.getElementById('view-dashboard').style.display = 'none';
 }
@@ -41,18 +53,11 @@ function cerrarModulos() {
     document.getElementById('view-dashboard').style.display = vendedorActual ? 'block' : 'none';
     cancelarFactura();
 }
-/* Clientes: datos de contacto y campos del crédito fiscal. */
-document.getElementById('form-cliente').addEventListener('submit', async e => {
-    e.preventDefault();
-    const r = await peticionPanel('save_client', Object.fromEntries(new FormData(e.target)));
-    alert(r.message);
-    if (r.success) { e.target.reset(); await cargarCatalogos(); }
-});
-/* Gestión suprema: empleados, restricciones, auditoría y cola de correo. */
+/* Administración: empleados, restricciones, auditoría y cola de correo. */
 let empleadosPanel = [];
 async function mostrarAdministracion() {
     const r = await peticionPanel('admin');
-    if (!r.success) return alert(r.message);
+    if (!r.success) return mostrarAviso(r.message);
     abrirModulo('sec-admin'); empleadosPanel = r.usuarios;
     document.getElementById('correo-jefe').value = r.correo_configuracion.jefe || '';
     document.getElementById('correo-transporte-estado').textContent = r.correo_configuracion.smtp_mensaje;
@@ -69,6 +74,7 @@ function editarEmpleado(id) {
         if (campo.type === 'checkbox') campo.checked = Boolean(Number(valor));
         else campo.value = nombre.startsWith('hora_') ? valor.slice(0,5) : (valor ?? '');
     });
+    actualizarCamposHorario();
     form.scrollIntoView({behavior:'smooth'});
 }
 /* Guardar el destinatario no envía mensajes: el botón de prueba comprueba el envío. */
@@ -92,9 +98,31 @@ async function probarCorreoAlertas() {
 document.getElementById('form-usuario').addEventListener('submit', async e => {
     e.preventDefault();
     const datos = Object.fromEntries(new FormData(e.target)); datos.activo = e.target.elements.activo.checked;
-    const r = await peticionPanel('save_user',datos); alert(r.message);
+    const r = await peticionPanel('save_user',datos); mostrarAviso(r.message, r.success ? 'exito' : 'error');
     if (r.success) { e.target.reset(); await mostrarAdministracion(); }
 });
 async function reintentarCorreo(id) {
-    const r = await peticionPanel('retry_mail',{id}); alert(r.message); await mostrarAdministracion();
+    const r = await peticionPanel('retry_mail',{id}); mostrarAviso(r.message, r.success ? 'exito' : 'error'); await mostrarAdministracion();
 }
+
+/* Los campos de horario solo tienen sentido para los empleados. */
+function actualizarCamposHorario() {
+    const form = document.getElementById('form-usuario');
+    const admin = form.elements.rol.value === 'admin';
+    ['dias','hora_inicio','hora_fin','fecha_desde','fecha_hasta'].forEach(nombre => {
+        form.elements[nombre].disabled = admin;
+    });
+    form.elements.clave.required = !form.elements.id.value;
+    document.getElementById('titulo-form-usuario').textContent = form.elements.id.value ? 'Editar empleado' : 'Nuevo empleado';
+}
+const formularioUsuario = document.getElementById('form-usuario');
+formularioUsuario.elements.rol.addEventListener('change', actualizarCamposHorario);
+formularioUsuario.addEventListener('reset', () => setTimeout(actualizarCamposHorario, 0));
+actualizarCamposHorario();
+
+document.getElementById('form-sucursal').addEventListener('submit', async evento => {
+    evento.preventDefault();
+    const resultado = await peticionPanel('save_branch', Object.fromEntries(new FormData(evento.target)));
+    mostrarAviso(resultado.message, resultado.success ? 'exito' : 'error');
+    if (resultado.success) { evento.target.reset(); await cargarCatalogos(); }
+});

@@ -3,8 +3,8 @@
 class CalculoTotalFactura extends CalculoMonetario {
     calcular(items) {
         const calculoLinea = new CalculoTotalLinea();
-        const total = items.reduce((suma, item) =>
-            suma + calculoLinea.calcular(item.precio_unitario, item.cantidad), 0);
-        return super.calcular(total);
+        const centavos = items.reduce((suma, item) =>
+            suma + Math.round(calculoLinea.calcular(item.precio_unitario, item.cantidad) * 100), 0);
+        return centavos / 100;
     }
 }

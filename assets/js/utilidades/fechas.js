@@ -6,10 +6,6 @@ function fechaOperacion() {
     return `${valor('year')}-${valor('month')}-${valor('day')}`;
 }
 
-function fechaEsFutura(fecha) {
-    return fecha > fechaOperacion();
-}
-
 function fechaTexto(fecha = fechaOperacion()) {
     return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-SV', {
         day: 'numeric',

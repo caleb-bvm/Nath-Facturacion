@@ -18,23 +18,35 @@
 
     <main class="container">
         <section id="view-login" class="card login-card">
-            <h3>Iniciar Sesión</h3>
+            <p class="eyebrow">CONTROL DE FACTURACIÓN</p>
+            <h3>Bienvenido</h3>
+            <p class="ayuda">Ingresa con tu cuenta para comenzar.</p>
+            <form id="form-login">
             <div class="form-group">
                 <label for="login-user">Usuario</label>
-                <input type="text" id="login-user" class="form-control" autocomplete="username">
+                <input type="text" id="login-user" class="form-control" autocomplete="username" required autofocus>
             </div>
             <div class="form-group">
                 <label for="login-pass">Contraseña</label>
-                <input type="password" id="login-pass" class="form-control" autocomplete="current-password">
+                <div class="password-field"><input type="password" id="login-pass" class="form-control" autocomplete="current-password" required><button id="btn-ver-clave" class="btn-texto" type="button" aria-controls="login-pass" aria-pressed="false" onclick="alternarClave()">Mostrar</button></div>
             </div>
-            <button class="btn btn-full" onclick="iniciarSesion()">Ingresar al Sistema</button>
-            <p id="login-error" class="error"></p>
+            <button id="btn-login" type="submit" class="btn btn-full">Ingresar</button>
+            </form>
+            <p id="login-error" class="error" role="alert"></p>
         </section>
 
         <div id="view-dashboard" style="display: none;">
             <section id="sec-dashboard-menu" class="card dashboard-card">
+                <p class="eyebrow">TU ESPACIO DE TRABAJO</p>
                 <h1 id="panel-titulo">Panel de usuario</h1>
                 <p>Fecha de operación: <strong id="lbl-fecha-operacion"></strong></p>
+                <div class="dashboard-buttons no-print">
+                    <button class="btn" onclick="mostrarSeccionNuevaFactura()">Nueva factura<span>Registra una venta y genera su PDF</span></button>
+                    <button id="btn-productos" class="btn" onclick="mostrarProductos()">Productos<span>Consulta el catálogo y agrega artículos</span></button>
+                    <button class="btn" onclick="mostrarHistorial()">Historial de ventas<span>Consulta facturas y descarga documentos</span></button>
+<button class="btn" onclick="mostrarClientes()">Clientes<span>Registra y edita sus datos de contacto</span></button>
+<button id="btn-admin" class="btn" hidden onclick="mostrarAdministracion()">Administración<span>Gestiona empleados, sucursales y correo</span></button>
+                </div>
                 <div id="lbl-edad-vendedor" class="info-bar"></div>
                 <!-- Horario personal: datos informativos sin campos de edición. -->
                 <section class="personal-schedule" aria-labelledby="titulo-mi-horario">
@@ -45,28 +57,22 @@
                         <div><dt>Fechas autorizadas</dt><dd id="horario-fechas"></dd></div>
                     </dl>
                     <p id="horario-turno-nocturno" hidden>El turno termina al día siguiente; los días indicados corresponden al inicio del turno.</p>
-                    <p>Hora de El Salvador. Debes ingresar antes de la hora de salida. Solo el administrador supremo puede cambiar tu horario.</p>
+                    <p id="horario-nota">Hora de El Salvador. Debes ingresar antes de la hora de salida. Solo el administrador puede cambiar tu horario.</p>
                 </section>
-                <div class="dashboard-buttons no-print">
-                    <button class="btn" onclick="mostrarSeccionNuevaFactura()">Registrar Nueva Factura</button>
-                    <button id="btn-productos" class="btn" onclick="mostrarProductos()">Gestionar Productos</button>
-                    <button class="btn" onclick="mostrarHistorial()">Historial de Ventas</button>
-<button class="btn" onclick="abrirModulo('sec-clientes')">Registrar cliente</button>
-<button id="btn-admin" class="btn" hidden onclick="mostrarAdministracion()">Administración suprema</button>
-                </div>
+
             </section>
 
             <section id="sec-nueva-factura" class="invoice card" style="display: none;">
-                <div class="invoice-title">CONTROL DE REGISTRO DE FACTURA - PAPELERÍA Y LIBRERÍA</div>
+                <div class="invoice-title">Nueva factura</div>
 
                 <div class="invoice-grid top-fields">
                     <div class="field">
-                        <label for="fac-fecha">Fecha (Estática):</label>
+                        <label for="fac-fecha">Fecha de operación:</label>
                         <input id="fac-fecha" class="form-control" readonly>
                     </div>
                     <div class="field">
                         <label>No. Documento:</label>
-                        <div id="lbl-nro-doc" class="form-control readonly">FAC-00000001</div>
+                        <div id="lbl-nro-doc" class="form-control readonly">Se asignará al guardar</div>
                     </div>
                     <div class="field">
                         <label for="fac-sucursal">Sucursal:</label>
@@ -96,7 +102,7 @@
                         </div>
                         <div class="field">
                             <label for="txt-cantidad">Cantidad</label>
-                            <input type="number" id="txt-cantidad" class="form-control" value="1" min="1" max="9999">
+                            <input type="number" id="txt-cantidad" class="form-control" value="1" min="1" max="9999" step="1">
                         </div>
                         <div class="field">
                             <label for="txt-precio">Precio final ($)</label>
@@ -106,7 +112,7 @@
                     </div>
                 </div>
 
-                <table id="tabla-items">
+                <div class="table-scroll" role="region" aria-label="Productos de la factura" tabindex="0"><table id="tabla-items">
                     <thead>
                         <tr>
                             <th>Item</th><th>Código</th><th>Descripción</th>
@@ -115,11 +121,11 @@
                         </tr>
                     </thead>
                     <tbody></tbody>
-                </table>
+                </table></div>
 
                 <div class="invoice-total">
                     <div class="footer-data">
-                        <p><strong>Usuario:</strong> <input id="lbl-footer-user" class="small-input" value="juan" readonly></p>
+                        <p><strong>Usuario:</strong> <input id="lbl-footer-user" class="small-input" value="" readonly></p>
                         <p><strong>Desglose de edad:</strong> <span id="lbl-footer-edad" class="age-breakdown"></span></p>
                     </div>
                     <div class="totals">
@@ -130,17 +136,17 @@
                     </div>
                 </div>
                 <div class="invoice-actions no-print">
-                    <button class="btn btn-green" onclick="guardarFacturaBD()">Registrar Factura en BD</button>
+                    <button id="btn-guardar-factura" class="btn btn-green" onclick="guardarFacturaBD()">Guardar factura</button>
                     <button class="btn btn-gray" onclick="cancelarFactura()">Cancelar</button>
                 </div>
             </section>
 
             <section id="sec-historial" class="card" style="display: none;">
                 <h2>Historial de Ventas</h2>
-                <table id="tabla-historial">
+                <div class="table-scroll" role="region" aria-label="Historial de ventas" tabindex="0"><table id="tabla-historial">
                     <thead><tr><th>Documento</th><th>Fecha</th><th>Sucursal</th><th>Cliente</th><th>Vendedor</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Comisión</th><th>PDF</th></tr></thead>
                     <tbody></tbody>
-                </table>
+                </table></div>
                 <button class="btn btn-gray no-print" onclick="cancelarFactura()">Volver</button>
             </section>
 
@@ -162,10 +168,10 @@
                     <button class="btn" onclick="guardarProducto()">Guardar</button>
                 </div>
                 <p id="producto-mensaje" class="error"></p>
-                <table id="tabla-productos">
+                <div class="table-scroll" role="region" aria-label="Catálogo de productos" tabindex="0"><table id="tabla-productos">
                     <thead><tr><th>Código</th><th>Descripción</th><th>Precio</th></tr></thead>
                     <tbody></tbody>
-                </table>
+                </table></div>
                 <button class="btn btn-gray no-print" onclick="cancelarFactura()">Volver</button>
             </section>
         </div>
@@ -173,16 +179,28 @@
 
     <!-- Módulos adicionales: clientes y administración. -->
     <section id="sec-clientes" class="card modulo container" hidden>
-      <h2>Registrar cliente</h2><form id="form-cliente">
+      <h2>Clientes</h2>
+      <h3 id="titulo-form-cliente">Nuevo cliente</h3>
+      <p class="ayuda">Nombre y correo son obligatorios. Para crédito fiscal, completa también NIT y NRC. Los cambios se aplican a las próximas facturas; las anteriores conservan sus datos y destinatarios.</p>
+      <form id="form-cliente" class="invoice-grid">
+      <input type="hidden" name="id">
       <label>Nombre<input class="form-control" name="nombre" maxlength="160" required></label>
-      <label>Correo<input class="form-control" name="correo" type="email" required></label>
+      <label>Correo<input class="form-control" name="correo" type="email" maxlength="254" required></label>
       <label>Teléfono<input class="form-control" name="telefono" maxlength="30"></label>
       <label>NIT<input class="form-control" name="nit" maxlength="30"></label>
       <label>NRC<input class="form-control" name="nrc" maxlength="30"></label>
-      <button class="btn">Guardar cliente</button></form><button class="btn btn-gray" onclick="cerrarModulos()">Volver</button>
+      <button id="guardar-cliente" class="btn">Guardar cliente</button>
+      <button id="cancelar-cliente" type="button" class="btn btn-gray" onclick="nuevoCliente()" hidden>Cancelar edición</button>
+      </form>
+      <h3>Clientes registrados</h3>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+        <tbody id="lista-clientes"></tbody>
+      </table></div>
+      <button class="btn btn-gray" onclick="cerrarModulos()">Volver</button>
     </section>
     <section id="sec-admin" class="card modulo container" hidden>
-      <h2>Administración suprema</h2><p>Los horarios y bloqueos también se aplican a este administrador. Días: 1=lunes, 7=domingo. El final del horario no está incluido.</p>
+      <h2>Administración</h2><p>El administrador activo tiene acceso permanente, sin restricciones de días, horas ni fechas. Los horarios se aplican a los empleados. Días: 1=lunes, 7=domingo. El final del horario no está incluido.</p>
       <!-- Destinatario editable para que el maestro pueda recibir las alertas. -->
       <section class="personal-schedule" aria-labelledby="titulo-correo-alertas">
           <h3 id="titulo-correo-alertas">Correo de alertas</h3>
@@ -194,14 +212,21 @@
           </form>
           <p id="correo-transporte-estado"></p>
           <p id="correo-configuracion-mensaje" role="status" aria-live="polite"></p>
-          <p>Solo la dirección guardada aquí recibe las alertas, sin copias. Cuando el maestro reemplace tu correo por el suyo, las nuevas alertas y las pendientes llegarán únicamente a él. El sistema conserva su cuenta de envío; el maestro no necesita configurar otra.</p>
+          <p>Las alertas llegarán únicamente a esta dirección. Puedes cambiarla cuando lo necesites.</p>
       </section>
+      <h3>Registrar sucursal</h3>
+      <form id="form-sucursal" class="invoice-grid">
+        <label>Nombre<input name="nombre" maxlength="100" class="form-control" required></label>
+        <label>Dirección<input name="direccion" maxlength="255" class="form-control" required></label>
+        <button class="btn">Guardar sucursal</button>
+      </form>
+      <h3 id="titulo-form-usuario">Nuevo empleado</h3>
       <form id="form-usuario" class="invoice-grid">
       <input name="id" type="hidden"><label>Nombre<input name="nombre" class="form-control" maxlength="100" required></label>
       <label>Usuario<input name="usuario" class="form-control" required></label><label>Carnet<input name="carnet" class="form-control" maxlength="50"></label>
       <label>Fecha de nacimiento<input name="fecha_nacimiento" type="date" class="form-control" required></label>
-      <label>Rol<select name="rol" class="form-control"><option value="usuario">Usuario</option><option value="supremo">Supremo</option></select></label>
-      <label>Contraseña (vacía conserva la actual)<input name="clave" type="password" minlength="12" autocomplete="new-password" class="form-control"></label>
+      <label>Rol<select name="rol" class="form-control"><option value="usuario">Usuario</option><option value="admin">Admin</option></select></label>
+      <label>Contraseña (vacía conserva la actual)<input name="clave" type="password" maxlength="255" autocomplete="new-password" class="form-control"></label>
       <label>Días autorizados<input name="dias" value="1,2,3,4,5,6" class="form-control" required></label>
       <label>Inicio<input name="hora_inicio" type="time" value="08:00" class="form-control" required></label><label>Fin<input name="hora_fin" type="time" value="18:00" class="form-control" required></label>
       <label>Desde<input name="fecha_desde" type="date" class="form-control"></label><label>Hasta<input name="fecha_hasta" type="date" class="form-control"></label>
@@ -209,6 +234,8 @@
       </form><h3>Empleados</h3><div id="lista-usuarios"></div><h3>Últimos accesos denegados</h3><div id="lista-accesos"></div><h3>Correos</h3><div id="lista-correos"></div>
       <button class="btn btn-gray" onclick="cerrarModulos()">Volver</button>
     </section>
+    <aside id="aviso" class="aviso no-print" hidden><span id="aviso-texto" role="status" aria-live="polite"></span><button class="btn-texto" type="button" aria-label="Cerrar mensaje" onclick="document.getElementById('aviso').hidden = true">Cerrar</button></aside>
+    <script src="assets/js/interfaz.js"></script>
     <script src="assets/js/calculos/Calculo.js"></script>
     <script src="assets/js/calculos/CalculoMonetario.js"></script>
     <script src="assets/js/calculos/CalculoTotalLinea.js"></script>
@@ -218,12 +245,11 @@
     <script src="assets/js/calculos/CalculoComision.js"></script>
     <script src="assets/js/calculos/CalculoFactura.js"></script>
     <script src="assets/js/utilidades/fechas.js"></script>
-    <script src="assets/js/utilidades/formatos.js"></script>
-    <script src="assets/js/calculos/CalculoAntiguedad.js"></script>
+    <script src="assets/js/calculos/CalculoEdad.js"></script>
     <script src="assets/js/calculos/CalculoCumpleanos.js"></script>
-    <script src="assets/js/calculos/CalculoCorrelativo.js"></script>
     <script src="assets/js/base-datos.js"></script>
     <script src="assets/js/principal.js"></script>
     <script src="assets/js/paneles.js"></script>
+    <script src="assets/js/clientes.js"></script>
 </body>
 </html>

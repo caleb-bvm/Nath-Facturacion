@@ -9,7 +9,7 @@ class CalculoComision extends Calculo {
 
         /* Trabajar desde los centavos evita diferencias en el redondeo de la comisión. */
         const centavos = Math.round(subtotal * 100);
-        const monto = new CalculoMonetario().calcular(centavos * porcentaje / 10000);
+        const monto = Math.round(centavos * porcentaje / 100) / 100;
         return { porcentaje, monto };
     }
 }

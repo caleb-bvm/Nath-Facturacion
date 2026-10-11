@@ -1,27 +1,17 @@
-/* Bloque principal: assets/js/principal.js. Responsabilidades separadas por secciones. */
-// Controla las pantallas, validaciones y acciones del usuario.
-// ======================================================
-// ARCHIVO: assets/js/principal.js
-// FUNCIÓN:
-// Controla toda la interfaz, eventos, validaciones y 
-// el uso de las clases de cálculo polimórficas.
-// ======================================================
-
 let vendedorActual = null;
 let catalogoProductos = [];
 let catalogoSucursales = [];
 let itemsFactura = [];
+let guardandoFactura = false;
+let solicitudFactura = '';
+let iniciandoSesion = false;
 
 // Instancias de las clases de cálculo
 const calcEdad = new CalculoEdad();
 const calcCumpleanos = new CalculoCumpleanos();
-const calcCorrelativo = new CalculoCorrelativo();
 const calcFactura = new CalculoFactura();
 
-
-// ======================================================
 // INICIAR SESIÓN
-// ======================================================
 async function iniciarSesion() {
     const usuario = document.getElementById('login-user').value.trim();
     const clave = document.getElementById('login-pass').value;
@@ -32,7 +22,19 @@ async function iniciarSesion() {
         return;
     }
 
-    const res = await BaseDatos.login(usuario, clave);
+    if (iniciandoSesion) return;
+    iniciandoSesion = true;
+    const boton = document.getElementById('btn-login');
+    boton.disabled = true;
+    boton.textContent = 'Ingresando…';
+    errorLbl.textContent = '';
+    let res;
+    try { res = await BaseDatos.login(usuario, clave); }
+    finally {
+        iniciandoSesion = false;
+        boton.disabled = false;
+        boton.textContent = 'Ingresar';
+    }
 
     if (res.success) {
         vendedorActual = res.vendedor;
@@ -41,12 +43,12 @@ async function iniciarSesion() {
         // Cambiar vistas de la interfaz
         document.getElementById('view-login').style.display = 'none';
         document.getElementById('view-dashboard').style.display = 'block';
-        document.getElementById('user-info').style.display = 'block';
+        document.getElementById('user-info').style.display = 'flex';
         document.getElementById('welcome-user').textContent = `Usuario: ${vendedorActual.usuario}`;
 
         // Rellenar datos institucionales y de usuario en el panel
         document.getElementById('fac-vendedor').value = `${vendedorActual.usuario} (${vendedorActual.nombre})`;
-        document.getElementById('fac-telefono').value = vendedorActual.telefono || '2255-8899';
+        document.getElementById('fac-telefono').value = '';
         document.getElementById('lbl-footer-user').value = vendedorActual.usuario;
 
         const fechaActual = fechaOperacion();
@@ -75,27 +77,43 @@ async function iniciarSesion() {
     }
 }
 
-
-// ======================================================
 // CERRAR SESIÓN
-// ======================================================
 async function logout() {
-    await peticionPanel('logout', {});
+    if (guardandoFactura) { mostrarAviso('Espere a que termine el registro de la factura.'); return; }
+    const res = await peticionPanel('logout', {});
+    if (!res.success && !res.sesion_finalizada) { mostrarAviso(res.message); return; }
+    limpiarSesion();
+}
+
+function limpiarSesion() {
+    guardandoFactura = false;
     cerrarModulos();
+    itemsFactura = [];
+    catalogoProductos = [];
+    catalogoSucursales = [];
+    empleadosPanel = [];
+    clientesPanel = [];
+    solicitudFactura = '';
+    BaseDatos.csrf = '';
+    document.querySelectorAll('.modulo form').forEach(form => form.reset());
+    ['lista-usuarios','lista-accesos','lista-correos'].forEach(id => document.getElementById(id).textContent = '');
+    document.querySelectorAll('tbody').forEach(tabla => tabla.textContent = '');
     vendedorActual = null;
     document.getElementById('view-dashboard').style.display = 'none';
     document.getElementById('user-info').style.display = 'none';
     document.getElementById('view-login').style.display = 'block';
     document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').type = 'password';
+    document.getElementById('btn-ver-clave').textContent = 'Mostrar';
+    document.getElementById('btn-ver-clave').setAttribute('aria-pressed','false');
+    document.getElementById('aviso').hidden = true;
+    document.getElementById('login-user').focus();
 }
 
-
-// ======================================================
 // CARGAR CATÁLOGOS (PRODUCTOS Y SUCURSALES)
-// ======================================================
 async function cargarCatalogos() {
     const res = await BaseDatos.getCatalogs();
-    if (!res.success) { alert(res.message); return; }
+    if (!res.success) { mostrarAviso(res.message); return; }
     if (res.success) {
         catalogoProductos = res.productos;
         catalogoSucursales = res.sucursales;
@@ -111,7 +129,7 @@ async function cargarCatalogos() {
         });
         listaClientes.onchange = () => {
             const cliente = listaClientes.options[listaClientes.selectedIndex];
-            document.getElementById('fac-telefono').value = cliente.dataset.telefono || '';
+            document.getElementById('fac-telefono').value = cliente?.dataset.telefono || '';
         };
         if (listaClientes.options.length > 0) {
             listaClientes.selectedIndex = 0;
@@ -134,14 +152,12 @@ async function cargarCatalogos() {
             selProd.appendChild(opt);
         });
 
-        if (selProd.options.length > 0) {
-            document.getElementById('txt-precio').value = selProd.options[0].dataset.precio;
-        }
+        document.getElementById('txt-precio').value = selProd.options[0]?.dataset.precio || '';
 
         // Actualizar precio automáticamente al cambiar de producto
         selProd.onchange = (e) => {
             const optSel = e.target.options[e.target.selectedIndex];
-            document.getElementById('txt-precio').value = optSel.dataset.precio;
+            document.getElementById('txt-precio').value = optSel?.dataset.precio || '';
         };
 
         // Llenar selector de sucursales
@@ -156,31 +172,28 @@ async function cargarCatalogos() {
     }
 }
 
-
-// ======================================================
 // NAVEGACIÓN ENTRE SECCIONES
-// ======================================================
 async function mostrarSeccionNuevaFactura() {
+    if (guardandoFactura) return;
+    window.scrollTo(0, 0);
     document.getElementById('sec-dashboard-menu').style.display = 'none';
     document.getElementById('sec-nueva-factura').style.display = 'block';
     document.getElementById('sec-historial').style.display = 'none';
     document.getElementById('sec-productos').style.display = 'none';
     itemsFactura = [];
 
-    // Generar correlativo automático para el número de documento
-    const histRes = await BaseDatos.getInvoices();
-    let ultimoNum = 0;
-    if (histRes.success && histRes.facturas.length > 0) {
-        const partes = histRes.facturas[0].numero.split('-');
-        if (partes.length > 1) ultimoNum = parseInt(partes[1], 10);
-    }
-    const nuevoCorrelativo = calcCorrelativo.calcular('FAC', ultimoNum);
-    document.getElementById('lbl-nro-doc').textContent = nuevoCorrelativo;
+    // El número definitivo solo existe cuando el servidor guarda la factura.
+    solicitudFactura = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2,'0')).join('');
+    document.getElementById('lbl-nro-doc').textContent = 'Se asignará al guardar';
+    document.getElementById('fac-fecha').value = fechaTexto(fechaOperacion()).toUpperCase();
+    document.getElementById('fac-tipo').value = 'consumidor';
+    await cargarCatalogos();
 
     renderizarItemsFactura();
 }
 
 async function mostrarHistorial() {
+    window.scrollTo(0, 0);
     document.getElementById('sec-dashboard-menu').style.display = 'none';
     document.getElementById('sec-nueva-factura').style.display = 'none';
     document.getElementById('sec-historial').style.display = 'block';
@@ -190,7 +203,9 @@ async function mostrarHistorial() {
     const tbody = document.querySelector('#tabla-historial tbody');
     tbody.innerHTML = '';
 
+    if (!res.success) { mostrarAviso(res.message); return; }
     if (res.success) {
+        if (!res.facturas.length) tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Todavía no hay ventas registradas.</td></tr>';
         res.facturas.forEach(f => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -211,6 +226,8 @@ async function mostrarHistorial() {
 }
 
 function cancelarFactura() {
+    if (guardandoFactura) return;
+    window.scrollTo(0, 0);
     document.getElementById('sec-nueva-factura').style.display = 'none';
     document.getElementById('sec-historial').style.display = 'none';
     document.getElementById('sec-dashboard-menu').style.display = 'block';
@@ -218,6 +235,7 @@ function cancelarFactura() {
 }
 
 async function mostrarProductos() {
+    window.scrollTo(0, 0);
     document.getElementById('sec-dashboard-menu').style.display = 'none';
     document.getElementById('sec-nueva-factura').style.display = 'none';
     document.getElementById('sec-historial').style.display = 'none';
@@ -229,6 +247,7 @@ async function mostrarProductos() {
         document.getElementById('producto-mensaje').textContent = res.message;
         return;
     }
+    if (!res.productos.length) tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Agrega tu primer producto usando el formulario.</td></tr>';
     res.productos.forEach(producto => {
         tbody.innerHTML += `<tr><td>${escaparHtml(producto.codigo)}</td><td>${escaparHtml(producto.descripcion)}</td><td>$${Number(producto.precio).toFixed(2)}</td></tr>`;
     });
@@ -239,12 +258,14 @@ async function guardarProducto() {
     const description = document.getElementById('nueva-descripcion').value.trim();
     const price = document.getElementById('nuevo-precio').value;
     const message = document.getElementById('producto-mensaje');
+    message.classList.remove('mensaje-exito');
     if (!/^PROD-\d{6}$/.test(code) || !description || description.length > 160 || Number(price) <= 0) {
         message.textContent = 'Use un código PROD-000000, descripción y precio mayor que cero.';
         return;
     }
     const res = await BaseDatos.saveProduct({ codigo: code, descripcion: description, precio: price });
     message.textContent = res.message;
+    message.classList.toggle('mensaje-exito', Boolean(res.success));
     if (res.success) {
         document.getElementById('nuevo-codigo').value = '';
         document.getElementById('nueva-descripcion').value = '';
@@ -254,21 +275,18 @@ async function guardarProducto() {
     }
 }
 
-
-// ======================================================
 // GESTIÓN DE ITEMS EN LA FACTURA
-// ======================================================
 function agregarItemFactura() {
     const selProd = document.getElementById('sel-producto');
     const opt = selProd.options[selProd.selectedIndex];
     const cantidad = Number(document.getElementById('txt-cantidad').value);
 
     if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 9999) {
-        alert('Ingrese una cantidad válida entre 1 y 9,999.');
+        mostrarAviso('Ingrese una cantidad entera entre 1 y 9,999. No se permiten unidades decimales.');
         return;
     }
 
-    if (!opt) { alert('No hay productos disponibles.'); return; }
+    if (!opt) { mostrarAviso('No hay productos disponibles.'); return; }
     const producto_id = opt.value;
     const codigo_producto = opt.dataset.codigo;
     const descripcion = opt.dataset.descripcion;
@@ -277,11 +295,12 @@ function agregarItemFactura() {
     // Validar productos repetidos en la misma factura
     const repetido = itemsFactura.find(item => item.producto_id === producto_id);
     if (repetido) {
-        alert('Este producto ya fue agregado. Modifique la cantidad si lo requiere.');
+        mostrarAviso('Este producto ya está en la factura. Quítalo y agrégalo con la cantidad correcta.');
         return;
     }
 
-    const total_linea = cantidad * precio_unitario;
+    if (itemsFactura.length >= 200) { mostrarAviso('Se permiten hasta 200 productos por factura.'); return; }
+    const total_linea = new CalculoTotalLinea().calcular(precio_unitario, cantidad);
 
     itemsFactura.push({
         producto_id,
@@ -297,7 +316,7 @@ function agregarItemFactura() {
 
 function renderizarItemsFactura() {
     const tbody = document.querySelector('#tabla-items tbody');
-    tbody.innerHTML = '';
+    tbody.innerHTML = itemsFactura.length ? '' : '<tr><td colspan="7" class="empty-state">Selecciona un producto y pulsa Añadir para comenzar.</td></tr>';
 
     itemsFactura.forEach((item, index) => {
         const tr = document.createElement('tr');
@@ -308,7 +327,7 @@ function renderizarItemsFactura() {
             <td style="text-align:center;">${item.cantidad}</td>
             <td>$${item.precio_unitario.toFixed(2)}</td>
             <td>$${item.total_linea.toFixed(2)}</td>
-            <td class="no-print" style="text-align:center;"><button class="btn" style="background:#dc2626; padding:0.1rem 0.4rem; font-size:0.75rem;" onclick="eliminarItem(${index})">X</button></td>
+            <td class="no-print" style="text-align:center;"><button class="btn btn-small btn-eliminar" aria-label="Quitar ${escaparHtml(item.descripcion)}" onclick="eliminarItem(${index})">Quitar</button></td>
         `;
         tbody.appendChild(tr);
     });
@@ -321,10 +340,7 @@ function eliminarItem(index) {
     renderizarItemsFactura();
 }
 
-
-// ======================================================
 // CÁLCULOS FINANCIEROS (SUBTOTAL, IVA, TOTAL, COMISIÓN)
-// ======================================================
 function calcularTotalesFactura() {
     const valores = calcFactura.calcular(itemsFactura);
     const subtotal = valores.subtotal;
@@ -339,55 +355,48 @@ function calcularTotalesFactura() {
     document.getElementById('lbl-comision-monto').textContent = comision.monto.toFixed(2);
 }
 
-
-// ======================================================
 // GUARDAR FACTURA EN BASE DE DATOS Y GENERAR PDF
-// ======================================================
 async function guardarFacturaBD() {
+    if (guardandoFactura) return;
     if (itemsFactura.length === 0) {
-        alert('La factura debe contener al menos un producto.');
+        mostrarAviso('La factura debe contener al menos un producto.');
         return;
     }
 
     const cliente = document.getElementById('fac-cliente').value.trim();
-    const telefono = document.getElementById('fac-telefono').value.trim();
 
     if (!cliente) {
-        alert('El nombre del cliente es obligatorio.');
+        mostrarAviso('El nombre del cliente es obligatorio.');
         document.getElementById('fac-cliente').focus();
         return;
     }
 
-    /* Usar el mismo desglose para la vista y el envío al servidor. */
-    const { subtotal, iva, total, comision: comisionData } = calcFactura.calcular(itemsFactura);
-    const numeroFactura = document.getElementById('lbl-nro-doc').textContent;
-
+    // PHP toma de la base los precios, el cliente, el usuario y los importes.
     const facturaData = {
-        numero: numeroFactura,
-        fecha: fechaOperacion(),
-        vendedor_id: vendedorActual.id,
+        solicitud_id: solicitudFactura,
         sucursal_id: document.getElementById('fac-sucursal').value,
         cliente_id: cliente,
         tipo: document.getElementById('fac-tipo').value,
-        telefono: telefono,
-        subtotal: subtotal,
-        iva_porcentaje: 13.00,
-        iva: iva,
-        total: total,
-        comision_porcentaje: comisionData.porcentaje,
-        comision: comisionData.monto,
-        detalles: itemsFactura
+        detalles: itemsFactura.map(({producto_id, cantidad}) => ({producto_id, cantidad}))
     };
 
-    const res = await BaseDatos.saveInvoice(facturaData);
+    guardandoFactura = true;
+    const boton = document.getElementById('btn-guardar-factura');
+    boton.disabled = true;
+    boton.textContent = 'Guardando…';
+    let res;
+    try { res = await BaseDatos.saveInvoice(facturaData); }
+    finally { guardandoFactura = false; boton.disabled = false; boton.textContent = 'Guardar factura'; }
 
     if (res.success) {
         document.getElementById('lbl-nro-doc').textContent = res.numero;
-        alert(res.message);
+        mostrarAviso(`${res.numero}: ${res.message}`, 'exito');
         window.open(API_URL + '?action=pdf&id=' + res.id, '_blank');
 
+        itemsFactura = [];
+        solicitudFactura = '';
         cancelarFactura();
     } else {
-        alert('Error al registrar la factura: ' + res.message);
+        mostrarAviso('Error al registrar la factura: ' + res.message);
     }
 }
