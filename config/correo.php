@@ -1,6 +1,7 @@
 <?php
 /* Gmail SMTP: leer la contraseña de aplicación desde un archivo privado o
  * variables del servidor. El archivo privado queda fuera de htdocs. */
+require_once __DIR__ . '/entorno.php';
 $rutaPrivada = getenv('FACTURACION_CORREO_PRIVADO') ?: dirname(__DIR__,3) . '/facturacion-privado/correo.php';
 $privado = is_file($rutaPrivada) ? require $rutaPrivada : [];
 $usuarioSMTP = getenv('FACTURACION_SMTP_USUARIO') ?: ($privado['usuario'] ?? '');

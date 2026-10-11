@@ -1,0 +1,4 @@
+# Impedir que Apache entregue los archivos de configuración .env por HTTP.
+<FilesMatch "^\.env($|\.)">
+    Require all denied
+</FilesMatch>
