@@ -1,7 +1,7 @@
 /* Migración no destructiva: ejecutar una vez sobre la base existente. */
-USE facturacion_db;
+-- Seleccionar la base existente antes de ejecutar.
 ALTER TABLE vendedores
- ADD COLUMN rol ENUM('usuario','supremo') NOT NULL DEFAULT 'usuario',
+ ADD COLUMN rol ENUM('usuario','admin') NOT NULL DEFAULT 'usuario',
  ADD COLUMN carnet VARCHAR(50) NULL,
  ADD COLUMN dias VARCHAR(20) NOT NULL DEFAULT '1,2,3,4,5,6',
  ADD COLUMN hora_inicio TIME NOT NULL DEFAULT '08:00:00',
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS correos (
 );
 
 /* Configuración de correo editable: ejecutar sin eliminar datos existentes. */
-USE facturacion_db;
+-- La configuración de correo forma parte de esta misma actualización.
 CREATE TABLE IF NOT EXISTS configuracion_correo (
     id TINYINT PRIMARY KEY,
     jefe VARCHAR(254) NOT NULL DEFAULT '',

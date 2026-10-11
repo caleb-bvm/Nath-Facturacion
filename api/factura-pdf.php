@@ -13,7 +13,7 @@ function pdfFactura(PDO $pdo, int $id): string {
         'Correo: ' . $f['cliente_correo'], 'NIT: ' . $f['cliente_nit'] . ' | NRC: ' . $f['cliente_nrc'], '', 'DETALLE DE PRODUCTOS'];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $d) {
         $texto = $d['codigo_producto'] . ' - ' . $d['descripcion'];
-        foreach (explode("\n",wordwrap($texto,85,"\n",true)) as $linea) $lineas[] = $linea;
+        $lineas[] = $texto;
         $lineas[] = 'Cantidad: ' . $d['cantidad'] . ' | Precio: $' . $d['precio_unitario'] . ' | Total: $' . $d['total_linea'];
         $lineas[] = '';
     }
@@ -22,7 +22,9 @@ function pdfFactura(PDO $pdo, int $id): string {
     $lineasAjustadas = [];
     foreach ($lineas as $linea) {
         $linea = preg_replace('/[\r\n\t]+/u', ' ', $linea);
-        foreach (explode("\n", wordwrap($linea,50,"\n",true)) as $parte) $lineasAjustadas[] = $parte;
+        // Dividir por caracteres Unicode, sin cortar los bytes de letras acentuadas.
+        preg_match_all('/.{1,50}(?:\s+|$)|.{1,50}/u', $linea, $partes);
+        foreach ($partes[0] ?: [''] as $parte) $lineasAjustadas[] = $parte;
     }
     $paginas = array_chunk($lineasAjustadas,45);
     $objetos = [1=>'<< /Type /Catalog /Pages 2 0 R >>',2=>'',3=>'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'];

@@ -1,5 +1,5 @@
 /* Configuración de correo editable: ejecutar sin eliminar datos existentes. */
-USE facturacion_db;
+-- Seleccionar la base existente antes de ejecutar.
 CREATE TABLE IF NOT EXISTS configuracion_correo (
     id TINYINT PRIMARY KEY,
     jefe VARCHAR(254) NOT NULL DEFAULT '',

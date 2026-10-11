@@ -1,5 +1,5 @@
 <?php
-/* Resolver las direcciones guardadas en el panel supremo.
+/* Resolver las direcciones guardadas en el panel admin.
  * La configuración local aporta valores iniciales; las credenciales del
  * transporte permanecen fuera de los formularios y del código JavaScript. */
 function configuracionCorreo(PDO $pdo): array {
@@ -15,9 +15,9 @@ function configuracionCorreo(PDO $pdo): array {
     } elseif (!in_array($inicial['smtp_auth'],['PLAIN','LOGIN'],true)) {
         $estado = 'Configure la autenticación SMTP como PLAIN o LOGIN.';
     } elseif (trim($inicial['smtp_usuario']) === '') {
-        $estado = 'Falta configurar el usuario SMTP en el archivo privado o en el servidor.';
+        $estado = 'Falta configurar el usuario SMTP en .env.';
     } elseif ($inicial['smtp_clave'] === '') {
-        $estado = 'Falta configurar la contraseña SMTP en el archivo privado o en el servidor.';
+        $estado = 'Falta configurar la contraseña SMTP en .env.';
     } elseif (!filter_var($inicial['remitente'],FILTER_VALIDATE_EMAIL)) {
         $estado = 'Falta configurar una dirección de correo remitente válida.';
     } else {
