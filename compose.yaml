@@ -12,7 +12,7 @@ services:
       FACTURACION_DB_USER: ${FACTURACION_DB_USER:-facturacion}
       FACTURACION_DB_PASS: ${FACTURACION_DB_PASS:?Configure FACTURACION_DB_PASS en .env}
       FACTURACION_COOKIE_SECURE: ${FACTURACION_COOKIE_SECURE:-0}
-      FACTURACION_SMTP_HOST: ${FACTURACION_SMTP_HOST:-mail.ourpxi.dev}
+      FACTURACION_SMTP_HOST: ${FACTURACION_SMTP_HOST:-}
       FACTURACION_SMTP_PUERTO: ${FACTURACION_SMTP_PUERTO:-465}
       FACTURACION_SMTP_CIFRADO: ${FACTURACION_SMTP_CIFRADO:-ssl}
       FACTURACION_SMTP_AUTH: ${FACTURACION_SMTP_AUTH:-LOGIN}
@@ -32,9 +32,7 @@ services:
         max-file: "3"
 
   db:
-    build:
-      context: .
-      dockerfile: docker/mysql.Dockerfile
+    image: mysql:8.4
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${FACTURACION_DB_NAME:-facturacion_db}
@@ -43,6 +41,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Configure MYSQL_ROOT_PASSWORD en .env}
     volumes:
       - mysql_datos:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u \"$$MYSQL_USER\" \"$$MYSQL_DATABASE\" -e 'SELECT id FROM configuracion_correo LIMIT 1' >/dev/null 2>&1"]
       interval: 10s
