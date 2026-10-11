@@ -1,0 +1,23 @@
+<?php
+/* Bloque principal: config/database.php. Responsabilidades separadas por secciones. */
+
+// Configuración de la conexión local con MySQL.
+define('DB_HOST', getenv('FACTURACION_DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('FACTURACION_DB_NAME') ?: 'facturacion_db');
+define('DB_USER', getenv('FACTURACION_DB_USER') ?: 'root');
+define('DB_PASS', getenv('FACTURACION_DB_PASS') ?: '');
+
+function db() {
+    try {
+        $conexion = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $conexion;
+    } catch (PDOException $e) {
+        header('Content-Type: application/json');
+        http_response_code(503);
+        error_log('Conexión de facturación: ' . $e->getMessage());
+        echo json_encode(['success'=>false,'message'=>'No se pudo conectar a MySQL. Verifique que esté iniciado.']);
+        exit();
+    }
+}
+?>

@@ -1,0 +1,104 @@
+/* Estilos sencillos para el panel, la factura y la impresión. */
+* { box-sizing: border-box; }
+/* Visibilidad de módulos y distribución de formularios complementarios. */
+[hidden] { display: none !important; }
+fieldset { margin: 16px 0; border: 1px solid #b7c3d5; border-radius: 10px; }
+.modulo h3 { margin-top: 28px; }
+.modulo form { margin-bottom: 20px; }
+.modulo .btn { margin: 6px 0; }
+
+body {
+    margin: 0;
+    color: #172033;
+    background: linear-gradient(135deg, #f4f7fb 0%, #eef2f9 100%);
+    font-family: Arial, sans-serif;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 72px;
+    padding: 14px 44px;
+    color: white;
+    background: linear-gradient(120deg, #172033, #243b68);
+    box-shadow: 0 4px 16px #17203330;
+}
+
+header h2 { margin: 0; font-size: 1.25rem; letter-spacing: .2px; }
+.user-info { display: flex; align-items: center; gap: 12px; }
+.container { max-width: 1300px; margin: 42px auto; padding: 0 24px; }
+.card { padding: 32px; margin-bottom: 24px; background: #ffffffed; border: 1px solid #ffffff; border-radius: 18px; box-shadow: 0 12px 30px #18203318; }
+.login-card { max-width: 410px; margin: 70px auto; }
+.login-card h3 { margin-bottom: 24px; color: #243b68; font-size: 1.5rem; }
+h1 { margin: 0 0 28px; font-size: 2rem; color: #101a2b; letter-spacing: -.5px; }
+h2, h3 { margin-top: 0; }
+.form-group, .field { margin-bottom: 14px; }
+label { display: block; margin-bottom: 6px; font-weight: bold; }
+.form-control, .small-input, .age-input {
+    width: 100%; min-height: 32px; padding: 7px 10px;
+    border: 1px solid #b7c3d5; border-radius: 8px; color: #1b2434;
+    background: #fbfcfe; font-size: 1rem; transition: border-color .2s, box-shadow .2s;
+}
+.form-control:focus { outline: none; border-color: #1477d4; box-shadow: 0 0 0 3px #1477d422; background: white; }
+.readonly { background: #f1f4f8; }
+.btn { padding: 13px 24px; border: 0; border-radius: 10px; color: white; background: #126dcc; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px #126dcc30; transition: transform .2s, background .2s, box-shadow .2s; }
+.btn:hover { background: #0959ac; transform: translateY(-2px); box-shadow: 0 7px 14px #126dcc40; }
+.btn-full { width: 100%; }
+.btn-small { padding: 6px 12px; font-size: .85rem; }
+.btn-red { background: #d0445b; }
+.btn-green { background: #159b58; }
+.btn-gray { background: #65738a; }
+.error { min-height: 18px; color: #c93636; }
+.info-bar { padding: 13px 16px; border-radius: 10px; color: #354064; background: linear-gradient(90deg, #eee4ff, #e5edff); border-left: 5px solid #8664d8; }
+/* Destacar al usuario que cumple años hoy sin cambiar el desglose de edad. */
+.birthday-message { color: #704214; background: #fff1b8; border-left-color: #f09a3e; font-weight: bold; }
+/* Consulta del horario personal: texto legible y adaptable a pantallas pequeñas. */
+.personal-schedule { margin-top: 24px; padding: 20px; border: 1px solid #c4cfdf; border-radius: 12px; background: #f7f9fc; }
+.personal-schedule h2 { font-size: 1.15rem; margin-bottom: 16px; }
+.personal-schedule p { color: #596579; line-height: 1.5; margin-bottom: 0; }
+.schedule-details { display: flex; flex-wrap: wrap; gap: 16px 28px; margin: 0; }
+.schedule-details div { flex: 1 1 220px; }
+.schedule-details dt { font-weight: bold; margin-bottom: 6px; }
+.schedule-details dd { margin: 0; line-height: 1.5; }
+.seller-line { color: #596579; }
+.dashboard-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; }
+.dashboard-buttons .btn:nth-child(2) { background: #7657c9; }
+.dashboard-buttons .btn:nth-child(3) { background: #e58a32; }
+.invoice { border: 2px solid #243b68; }
+.invoice-title { padding: 14px; margin-bottom: 20px; color: #1b2b43; background: linear-gradient(90deg, #e8eff8, #f3f6fb); border-radius: 10px; text-align: center; font-size: 1.25rem; font-weight: bold; }
+.invoice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.add-product { margin: 8px 0 18px; padding: 12px; border-top: 1px solid #d5dce6; border-bottom: 1px solid #d5dce6; }
+.add-product h4 { margin: 0 0 10px; }
+.product-fields { display: flex; align-items: end; gap: 12px; }
+.product-select { flex: 1; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 9px 10px; border: 1px solid #aab4c2; text-align: left; }
+th { background: #edf1f6; text-align: center; }
+.invoice-total { display: flex; justify-content: space-between; gap: 30px; margin-top: 16px; padding: 18px 20px; border: 1px solid #c4cfdf; border-radius: 12px; background: #f7f9fc; }
+.footer-data p, .totals p { margin: 7px 0; }
+.totals { min-width: 390px; text-align: right; }
+.small-input { width: 115px; }
+.age-input { width: 220px; }
+/* Permitir que el desglose completo de edad se lea sin recortar el texto. */
+.age-breakdown { display: inline-block; max-width: 100%; line-height: 1.5; }
+.grand-total { padding-top: 10px; border-top: 1px solid #bbc5d2; color: #243b68; font-size: 1.2rem; }
+.invoice-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+@media (max-width: 700px) {
+    header { padding: 12px 18px; }
+    header h2 { font-size: .95rem; }
+    .container { padding: 0 12px; }
+    .invoice-grid, .invoice-total { display: block; }
+    .totals { min-width: 0; margin-top: 20px; text-align: left; }
+    .product-fields, .dashboard-buttons { display: block; }
+    .product-fields .btn, .dashboard-buttons .btn { width: 100%; margin-top: 8px; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+@media print {
+    body { background: white; }
+    header, .no-print { display: none !important; }
+    .container, .card { margin: 0; padding: 0; box-shadow: none; }
+    .invoice { border: 1px solid #172033; }
+}
