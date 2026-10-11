@@ -1,7 +1,41 @@
 # Facturación
 
-Proyecto PHP + MySQL. Se instala con **Docker Compose**; no necesita XAMPP,
+Proyecto académico de facturación con PHP 8.3, MySQL 8.4 y una interfaz en
+HTML, CSS y JavaScript. Se instala con **Docker Compose**; no necesita XAMPP,
 Node.js, Composer ni importar archivos SQL manualmente en el servidor.
+
+## Funciones
+
+- Facturas de consumidor final y crédito fiscal, con descarga en PDF y envío por correo.
+- Registro y edición de clientes. Las facturas anteriores conservan los datos del cliente
+  que tenían al emitirse. El crédito fiscal requiere NIT y NRC.
+- Catálogos de productos y sucursales administrados desde el panel.
+- Administración de usuarios, bloqueo de cuentas y horarios por días, horas y fechas.
+- Historial de facturas: cada empleado consulta sus ventas; el administrador consulta todas.
+- Registro de accesos rechazados, alertas por correo y reintentos de envío desde administración.
+
+Los empleados pueden consultar su horario autorizado en el inicio. Los horarios usan
+la zona `America/El_Salvador`; la hora de salida no está incluida y los turnos nocturnos
+pertenecen al día en que comenzaron. Un administrador activo tiene acceso las 24 horas.
+
+## Cálculos de facturación
+
+Los precios del catálogo **ya incluyen IVA del 13%**. El sistema suma los importes
+de las líneas, obtiene la base sin IVA dividiendo el total entre `1.13` y calcula
+el IVA por diferencia. Las cantidades admitidas son enteras, de 1 a 9999 por línea.
+El servidor valida los productos y recalcula los importes con los precios del catálogo.
+
+La comisión del vendedor se calcula sobre la base sin IVA y no aumenta el total del cliente:
+
+| Base sin IVA | Comisión |
+| --- | --- |
+| Hasta $100.00 | 1% |
+| Más de $100.00 y hasta $1,000.00 | 2% |
+| Más de $1,000.00 y hasta $2,000.00 | 3% |
+| Más de $2,000.00 | 4% |
+
+Por ejemplo, una venta de **$113.00** tiene una base de **$100.00**, IVA de **$13.00**
+y comisión de **$1.00**. Los importes se redondean a dos decimales.
 
 ## Instalar en un servidor nuevo
 
@@ -15,6 +49,8 @@ Clona el repositorio desde GitHub en el servidor y entra en la carpeta del proye
    chmod 600 .env
    ```
 
+   En Windows con PowerShell, usa `Copy-Item .env.example .env`.
+
 2. Edita `.env`. Completa `FACTURACION_DB_PASS` y `MYSQL_ROOT_PASSWORD`
    con contraseñas distintas. Deja las opciones de correo vacías si aún no las usarás.
 
@@ -27,6 +63,7 @@ Clona el repositorio desde GitHub en el servidor y entra en la carpeta del proye
 
 Abre **http://IP-DEL-SERVIDOR:8080**. Permite el puerto 8080 en el firewall de tu
 servidor. Para probar en tu propia computadora usa http://localhost:8080.
+Puedes cambiar el puerto mediante `APP_PORT` en `.env`.
 
 Entra con **admin / admin123**. El administrador tiene acceso permanente.
 Puedes indicar otra contraseña como cuarto argumento del comando de creación.
@@ -49,6 +86,7 @@ Usa `ssl` para el puerto 465 o `tls` para el 587, según tu proveedor.
 Ejecuta `docker compose up -d`; luego entra en **Administración → Correo de alertas**,
 guarda el destinatario y prueba el envío. Sin SMTP, las facturas se guardan y los
 correos quedan pendientes. La biblioteca de correo ya viene incluida en `vendor/`.
+Después de configurar SMTP, puedes reintentar los correos pendientes desde administración.
 
 ## Comandos útiles
 
@@ -66,7 +104,7 @@ ya inicializada. La configuración privada `.env` no se incluye en Git.
 ## Si ya tienes una base anterior
 
 Conserva un respaldo. No importes `database/schema.sql`: es solo para una base vacía.
-Las actualizaciones anteriores están separadas en `database/migraciones/README.md`.
+Las actualizaciones anteriores están descritas en la [guía de migraciones](database/migraciones/README.md).
 Docker no ejecuta esas migraciones sobre tus datos existentes.
 
 ## Organización
@@ -77,5 +115,17 @@ Docker no ejecuta esas migraciones sobre tus datos existentes.
 - `database/`: esquema limpio y comando para crear el administrador.
 - `docker/`, `Dockerfile` y `compose.yaml`: ejecución en el servidor.
 
-Las pruebas de desarrollo se conservan en el repositorio en `tests/`. No se incluyen
-en la imagen de la aplicación.
+## Pruebas de desarrollo
+
+Las pruebas se conservan en `tests/` y no se incluyen en la imagen de la aplicación.
+Para ejecutar las pruebas de lógica y comparar los cálculos de JavaScript con PHP,
+necesitas PHP y Node.js disponibles localmente:
+
+```sh
+php tests/logica.php
+node tests/calculos.mjs
+```
+
+Las pruebas de API y migración necesitan una base desechable llamada
+`facturacion_pruebas`. La preparación reinicia esa base; sigue la
+[guía de pruebas](tests/README.md) para configurarla y ejecutar la suite completa.
