@@ -3,6 +3,19 @@ let consultaDetalleFactura = 0;
 const dialogoFactura = document.getElementById('detalle-factura');
 let consultaResumenFactura = 0;
 
+async function consultarFactura(id) {
+    try {
+        const respuesta = await BaseDatos.getInvoice(id);
+        if (!respuesta || (respuesta.success && (!respuesta.factura || !Array.isArray(respuesta.factura.detalles)))) {
+            throw new Error('Respuesta de factura inválida');
+        }
+        return respuesta;
+    } catch (error) {
+        console.error('No se pudo consultar la factura:', error);
+        return {success: false, message: 'No se pudo cargar la factura. Recargue la página y vuelva a intentarlo.'};
+    }
+}
+
 function cerrarResumenFactura() {
     consultaResumenFactura++;
     document.getElementById('sec-resumen-factura').hidden = true;
@@ -37,7 +50,7 @@ async function mostrarResumenFactura(id, mensaje = 'La factura se guardó correc
     contenido.setAttribute('aria-busy', 'true');
     window.scrollTo(0, 0);
     titulo.focus({preventScroll: true});
-    const res = await BaseDatos.getInvoice(id);
+    const res = await consultarFactura(id);
     if (consulta !== consultaResumenFactura || !vendedorActual) return;
     contenido.setAttribute('aria-busy', 'false');
     if (!res.success) {
@@ -69,7 +82,9 @@ function cerrarDetalleFactura() {
     limpiarDetalleFactura();
 }
 
-dialogoFactura.addEventListener('close', limpiarDetalleFactura);
+dialogoFactura.addEventListener('close', () => {
+    if (!dialogoFactura.open) limpiarDetalleFactura();
+});
 dialogoFactura.addEventListener('cancel', cerrarDetalleFactura);
 
 async function verDetalleFactura(id) {
@@ -80,7 +95,7 @@ async function verDetalleFactura(id) {
     contenido.textContent = 'Cargando factura…';
     contenido.setAttribute('aria-busy', 'true');
     if (!dialogoFactura.open) dialogoFactura.showModal();
-    const res = await BaseDatos.getInvoice(id);
+    const res = await consultarFactura(id);
     // Una respuesta anterior no debe reemplazar otra factura ni reabrir la ventana.
     if (consulta !== consultaDetalleFactura || !dialogoFactura.open || !vendedorActual) return;
     contenido.setAttribute('aria-busy', 'false');

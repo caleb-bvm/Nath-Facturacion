@@ -53,6 +53,9 @@ $pdo = db();
 try {
     if ($action !== 'login') {
         $sesion = usuarioAutorizado($pdo);
+        // La autorización ya leyó la sesión; no bloquear otras consultas durante SQL o SMTP.
+        // Logout conserva la sesión abierta para poder destruirla.
+        if ($action !== 'logout') session_write_close();
         accionesPanel($action, $pdo, $sesion);
     }
     switch ($action) {

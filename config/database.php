@@ -1,6 +1,6 @@
 <?php
 // Conexión a MySQL con las variables proporcionadas por Docker.
-define('DB_HOST', getenv('FACTURACION_DB_HOST') ?: 'localhost');
+define('DB_HOST', getenv('FACTURACION_DB_HOST') ?: '127.0.0.1');
 define('DB_PORT', getenv('FACTURACION_DB_PORT') ?: '3306');
 define('DB_NAME', getenv('FACTURACION_DB_NAME') ?: 'facturacion_db');
 define('DB_USER', getenv('FACTURACION_DB_USER') ?: 'root');
