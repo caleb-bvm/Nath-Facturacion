@@ -9,9 +9,9 @@ function escaparHtml(valor) {
 }
 function configurarPanel() {
     const admin = vendedorActual.rol === 'admin';
-    document.getElementById('panel-titulo').textContent = admin ? 'Panel de administrador' : 'Panel de usuario';
-    document.getElementById('btn-admin').hidden = !admin;
-    document.getElementById('btn-productos').hidden = !admin;
+    document.getElementById('panel-titulo').textContent = 'Tu día, en orden.';
+
+
     document.getElementById('login-error').textContent = '';
     mostrarHorarioUsuario(vendedorActual);
 }
@@ -61,9 +61,8 @@ async function mostrarAdministracion() {
     abrirModulo('sec-admin'); empleadosPanel = r.usuarios;
     document.getElementById('correo-jefe').value = r.correo_configuracion.jefe || '';
     document.getElementById('correo-transporte-estado').textContent = r.correo_configuracion.smtp_mensaje;
-    document.getElementById('lista-usuarios').innerHTML = r.usuarios.map(u => `<p>${escaparHtml(u.nombre)} (${escaparHtml(u.usuario)}) — ${escaparHtml(u.rol)} — ${Number(u.activo) ? 'Activo':'Bloqueado'} <button class="btn btn-small" onclick="editarEmpleado(${Number(u.id)})">Editar</button></p>`).join('');
-    document.getElementById('lista-accesos').innerHTML = r.accesos.map(a => `<p>${escaparHtml(a.fecha)} | ${escaparHtml(a.usuario)} | ${escaparHtml(a.motivo)} | IP: ${escaparHtml(a.ip)} | ${escaparHtml(a.agente)}</p>`).join('') || 'Sin alertas.';
-    document.getElementById('lista-correos').innerHTML = r.correos.map(c => `<p>${escaparHtml(c.destinatario || 'Destinatario por configurar')} | ${escaparHtml(c.asunto)} | ${escaparHtml(c.estado)} ${c.estado !== 'enviado' ? `<button class="btn btn-small" onclick="reintentarCorreo(${Number(c.id)})">Reintentar</button>`:''}</p>`).join('') || 'Sin correos.';
+    renderizarGestion(r);
+
 }
 function editarEmpleado(id) {
     const u = empleadosPanel.find(u => Number(u.id) === id);
@@ -74,6 +73,7 @@ function editarEmpleado(id) {
         if (campo.type === 'checkbox') campo.checked = Boolean(Number(valor));
         else campo.value = nombre.startsWith('hora_') ? valor.slice(0,5) : (valor ?? '');
     });
+    document.getElementById('editor-empleado').open = true;
     actualizarCamposHorario();
     form.scrollIntoView({behavior:'smooth'});
 }
@@ -112,6 +112,7 @@ function actualizarCamposHorario() {
     ['dias','hora_inicio','hora_fin','fecha_desde','fecha_hasta'].forEach(nombre => {
         form.elements[nombre].disabled = admin;
     });
+    form.querySelectorAll('[data-dia]').forEach(campo => { campo.checked = form.elements.dias.value.split(',').includes(campo.dataset.dia); campo.disabled = admin; });
     form.elements.clave.required = !form.elements.id.value;
     document.getElementById('titulo-form-usuario').textContent = form.elements.id.value ? 'Editar empleado' : 'Nuevo empleado';
 }
@@ -124,5 +125,5 @@ document.getElementById('form-sucursal').addEventListener('submit', async evento
     evento.preventDefault();
     const resultado = await peticionPanel('save_branch', Object.fromEntries(new FormData(evento.target)));
     mostrarAviso(resultado.message, resultado.success ? 'exito' : 'error');
-    if (resultado.success) { evento.target.reset(); await cargarCatalogos(); }
+    if (resultado.success) { evento.target.reset(); await cargarCatalogos(); renderizarSucursales(); }
 });

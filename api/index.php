@@ -124,7 +124,7 @@ try {
             $code = textoCampo($data, 'codigo', 50, true);
             $description = textoCampo($data, 'descripcion', 160, true);
             $price = (float)($data['precio'] ?? 0);
-            if (!preg_match('/^PROD-\d{6}$/', $code) || $price <= 0 || $price > 99999999.99 ||
+            if (!preg_match('/^MIN-\d{4}$/', $code) || $price <= 0 || $price > 99999999.99 ||
                 !preg_match('/^\d+(\.\d{1,2})?$/', (string)($data['precio'] ?? ''))) {
                 responder(['success' => false, 'message' => 'Descripción, código y precio válido son obligatorios.'], 422);
             }

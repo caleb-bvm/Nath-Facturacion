@@ -6,7 +6,7 @@ function pdfFactura(PDO $pdo, int $id): string {
     $f = $stmt->fetch(PDO::FETCH_ASSOC);
     $stmt = $pdo->prepare('SELECT * FROM factura_detalles WHERE factura_id=? ORDER BY id');
     $stmt->execute([$id]);
-    $lineas = ['PAPELERIA Y LIBRERIA EL ESTUDIANTE',
+    $lineas = ['PAPELERÍA GRÁFICA MININA',
         $f['tipo']==='credito' ? 'COMPROBANTE DE CREDITO FISCAL' : 'FACTURA CONSUMIDOR FINAL',
         $f['numero'] . ' | Fecha: ' . $f['fecha'], 'Sucursal: ' . $f['sucursal'],
         'Vendedor: ' . $f['vendedor'], 'Cliente: ' . $f['cliente'], 'Telefono: ' . $f['telefono'],

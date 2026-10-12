@@ -1,4 +1,4 @@
-# Facturación
+# Papelería Gráfica Minina
 
 Proyecto académico de facturación con PHP 8.3, MySQL 8.4 y una interfaz en
 HTML, CSS y JavaScript. Se instala con **Docker Compose**; no necesita XAMPP,

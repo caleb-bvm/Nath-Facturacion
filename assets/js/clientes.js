@@ -40,7 +40,8 @@ function editarCliente(id) {
     document.getElementById('titulo-form-cliente').textContent = 'Editar cliente';
     document.getElementById('guardar-cliente').textContent = 'Guardar cambios';
     document.getElementById('cancelar-cliente').hidden = false;
-    formularioCliente.elements.namedItem('correo').focus();
+    document.getElementById('editor-cliente').open = true;
+    formularioCliente.elements.namedItem('nombre').focus();
 }
 
 formularioCliente.addEventListener('submit', async evento => {

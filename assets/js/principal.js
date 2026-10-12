@@ -39,6 +39,10 @@ async function iniciarSesion() {
     if (res.success) {
         vendedorActual = res.vendedor;
         configurarPanel();
+        document.body.classList.add('sesion-activa');
+        document.getElementById('navegacion').hidden = false;
+        document.querySelectorAll('[data-admin]').forEach(e => e.hidden = vendedorActual.rol !== 'admin');
+        marcarVistaMinina('inicio');
         
         // Cambiar vistas de la interfaz
         document.getElementById('view-login').style.display = 'none';
@@ -72,6 +76,7 @@ async function iniciarSesion() {
 
         // Cargar catálogos desde MySQL a través de la API
         await cargarCatalogos();
+        await actualizarInicio();
     } else {
         errorLbl.textContent = res.message;
     }
@@ -80,12 +85,15 @@ async function iniciarSesion() {
 // CERRAR SESIÓN
 async function logout() {
     if (guardandoFactura) { mostrarAviso('Espere a que termine el registro de la factura.'); return; }
+    if (itemsFactura.length && !confirm('Tienes una factura sin guardar. ¿Cerrar sesión y descartarla?')) return;
     const res = await peticionPanel('logout', {});
     if (!res.success && !res.sesion_finalizada) { mostrarAviso(res.message); return; }
     limpiarSesion();
 }
 
 function limpiarSesion() {
+    document.body.classList.remove('sesion-activa');
+    document.getElementById('navegacion').hidden = true;
     guardandoFactura = false;
     cerrarModulos();
     itemsFactura = [];
@@ -180,7 +188,9 @@ async function mostrarSeccionNuevaFactura() {
     document.getElementById('sec-nueva-factura').style.display = 'block';
     document.getElementById('sec-historial').style.display = 'none';
     document.getElementById('sec-productos').style.display = 'none';
-    itemsFactura = [];
+    marcarVistaMinina('factura');
+    if (solicitudFactura) { renderizarItemsFactura(); return; }
+    document.getElementById('busqueda-producto').value = '';
 
     // El número definitivo solo existe cuando el servidor guarda la factura.
     solicitudFactura = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2,'0')).join('');
@@ -226,6 +236,7 @@ async function mostrarHistorial() {
 }
 
 function cancelarFactura() {
+    marcarVistaMinina('inicio');
     if (guardandoFactura) return;
     window.scrollTo(0, 0);
     document.getElementById('sec-nueva-factura').style.display = 'none';
@@ -259,8 +270,8 @@ async function guardarProducto() {
     const price = document.getElementById('nuevo-precio').value;
     const message = document.getElementById('producto-mensaje');
     message.classList.remove('mensaje-exito');
-    if (!/^PROD-\d{6}$/.test(code) || !description || description.length > 160 || Number(price) <= 0) {
-        message.textContent = 'Use un código PROD-000000, descripción y precio mayor que cero.';
+    if (!/^MIN-\d{4}$/.test(code) || !description || description.length > 160 || Number(price) <= 0) {
+        message.textContent = 'Use un código MIN-0001, descripción y precio mayor que cero.';
         return;
     }
     const res = await BaseDatos.saveProduct({ codigo: code, descripcion: description, precio: price });
@@ -286,7 +297,7 @@ function agregarItemFactura() {
         return;
     }
 
-    if (!opt) { mostrarAviso('No hay productos disponibles.'); return; }
+    if (!opt || !opt.value) { mostrarAviso('No hay productos disponibles.'); return; }
     const producto_id = opt.value;
     const codigo_producto = opt.dataset.codigo;
     const descripcion = opt.dataset.descripcion;
@@ -295,7 +306,7 @@ function agregarItemFactura() {
     // Validar productos repetidos en la misma factura
     const repetido = itemsFactura.find(item => item.producto_id === producto_id);
     if (repetido) {
-        mostrarAviso('Este producto ya está en la factura. Quítalo y agrégalo con la cantidad correcta.');
+        mostrarAviso('Este producto ya está en la factura. Puedes cambiar su cantidad directamente en la tabla.');
         return;
     }
 
@@ -324,7 +335,7 @@ function renderizarItemsFactura() {
             <td style="text-align:center;">${index + 1}</td>
             <td>${escaparHtml(item.codigo_producto)}</td>
             <td>${escaparHtml(item.descripcion)}</td>
-            <td style="text-align:center;">${item.cantidad}</td>
+            <td><input class="form-control cantidad-linea" type="number" min="1" max="9999" step="1" value="${item.cantidad}" aria-label="Cantidad de ${escaparHtml(item.descripcion)}" onchange="cambiarCantidad(${index}, this)"></td>
             <td>$${item.precio_unitario.toFixed(2)}</td>
             <td>$${item.total_linea.toFixed(2)}</td>
             <td class="no-print" style="text-align:center;"><button class="btn btn-small btn-eliminar" aria-label="Quitar ${escaparHtml(item.descripcion)}" onclick="eliminarItem(${index})">Quitar</button></td>
@@ -396,6 +407,7 @@ async function guardarFacturaBD() {
         itemsFactura = [];
         solicitudFactura = '';
         cancelarFactura();
+        await actualizarInicio();
     } else {
         mostrarAviso('Error al registrar la factura: ' + res.message);
     }

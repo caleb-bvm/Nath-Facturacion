@@ -33,12 +33,12 @@ admin.csrf = '';
 await admin.pedir('save_branch', {nombre:'No permitida',direccion:'Prueba'},403);
 admin.csrf = csrf;
 await admin.pedir('save_branch',{nombre:'Sucursal de prueba',direccion:'Dirección de prueba'});
-await admin.pedir('save_product',{codigo:'PROD-999999',descripcion:'Prueba',precio:'79.00'});
-await admin.pedir('save_product',{codigo:'PROD-999999',descripcion:'Duplicado',precio:'1.00'},409);
-await admin.pedir('save_product',{codigo:'PROD-999998',descripcion:'Desbordamiento',precio:'100000000.00'},422);
+await admin.pedir('save_product',{codigo:'MIN-9999',descripcion:'Prueba',precio:'79.00'});
+await admin.pedir('save_product',{codigo:'MIN-9999',descripcion:'Duplicado',precio:'1.00'},409);
+await admin.pedir('save_product',{codigo:'MIN-9998',descripcion:'Desbordamiento',precio:'100000000.00'},422);
 await empleado.pedir('save_client',{nombre:'Cliente de prueba',correo:'cliente@example.com',nit:'123',nrc:'456'});
 const catalogo = await admin.pedir('catalogs');
-const producto = catalogo.productos.find(p=>p.codigo === 'PROD-999999');
+const producto = catalogo.productos.find(p=>p.codigo === 'MIN-9999');
 const comprador = catalogo.clientes.find(c=>c.nombre === 'Cliente de prueba');
 const sucursal = catalogo.sucursales.find(s=>s.nombre === 'Sucursal de prueba');
 const venta = {solicitud_id:'solicitud-prueba-0001',cliente_id:comprador.id,sucursal_id:sucursal.id,tipo:'credito',

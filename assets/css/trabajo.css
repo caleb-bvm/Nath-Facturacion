@@ -1,0 +1,89 @@
+/* Distribución compacta de trabajo y tablas de Minina. */
+header { min-height:72px; padding:10px 22px; }
+.brand strong { font-size:29px; }
+.brand-cat { width:40px; height:40px; }
+.sidebar { top:72px; width:190px; padding:18px 12px; }
+.sidebar button { min-height:42px; padding:8px 10px; font-size:.88rem; }
+.sidebar-note { display:none; }
+.nav-group { margin:24px 10px 8px; padding-top:16px; border-top:1px solid #c9c3b8; }
+.sesion-activa > main.container,.sesion-activa > .modulo.container { margin:18px 18px 18px 208px; width:calc(100% - 226px); max-width:none; }
+.sesion-activa > .modulo.container,.card { padding:20px; }
+.dashboard-card { padding:0; }
+h1 { font-size:2rem; margin-bottom:8px; }
+h2 { font-size:1.45rem; margin-bottom:14px; }
+h3 { font-size:1.05rem; }
+.modulo h3 { margin-top:18px; }
+.home-actions { display:flex; gap:10px; margin:14px 0 18px; }
+.metric-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.metric-grid article { border:var(--line); border-radius:3px; box-shadow:3px 3px 0 var(--ink); padding:16px 18px; background:var(--yellow); }
+.metric-grid article:nth-child(2) { background:var(--lilac); }
+.metric-grid article:nth-child(3) { background:var(--pink); }
+.metric-grid span { display:block; font-size:.8rem; font-weight:600; }
+.metric-grid strong { display:block; font-size:1.8rem; font-variant-numeric:tabular-nums; margin-top:4px; }
+#resumen-estado { font-size:.78rem; color:#55534e; margin:12px 0 20px; }
+.personal-details { margin-top:18px; border-top:1px solid #ccc4b5; padding-top:12px; }
+summary { cursor:pointer; font-weight:650; font-size:.9rem; padding:10px 0; }
+.personal-details .personal-schedule { margin-top:10px; padding:14px; }
+.form-editor { border:1px solid #bdb5a6; background:#faf7ef; border-radius:3px; margin:12px 0 18px; padding:0 14px; }
+.form-editor[open] { padding-bottom:14px; }
+.form-editor > summary { width:fit-content; min-height:44px; }
+.form-editor form { margin-bottom:0; }
+.invoice-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px 14px; }
+.form-group,.field { margin-bottom:8px; }
+.form-control { min-height:40px; padding:8px 10px; font-size:.875rem; }
+.invoice-title { font-size:1.8rem; margin-bottom:16px; }
+.invoice-title span { font-size:.85rem; margin-top:5px; }
+.top-fields { padding:12px 14px; gap:8px 14px; grid-template-columns:repeat(4,minmax(0,1fr)); }
+.top-fields .field:has(input[readonly]),.top-fields .field:has(.readonly) { margin:0; }
+.top-fields input[readonly],.top-fields .readonly { border:0; min-height:24px; padding:0; background:transparent; font-size:.8rem; }
+.top-fields label { font-size:.75rem; margin-bottom:4px; }
+.top-fields .field:nth-child(1) { order:5; }
+.top-fields .field:nth-child(2) { order:6; }
+.top-fields .field:nth-child(4) { order:7; }
+.top-fields .field:nth-child(7) { order:8; }
+.add-product { margin-bottom:0; padding-bottom:0; }
+.add-product h2 { font-size:1.2rem; margin-bottom:10px; }
+#busqueda-producto { margin-bottom:12px; }
+.list-toolbar { margin:14px 0; gap:10px; }
+.list-toolbar .form-control { max-width:560px; }
+.list-toolbar [role=status] { color:#625b50; font-size:.75rem; }
+.table-scroll { margin:12px 0; border:1px solid var(--ink); box-shadow:2px 2px 0 var(--ink); max-height:65vh; overflow:auto; background:white; }
+table { border-collapse:separate; border-spacing:0; }
+th { position:sticky; top:0; z-index:1; background:#eee6ff; border-bottom:2px solid var(--ink); color:#302743; font-size:.7rem; text-transform:uppercase; letter-spacing:.045em; padding:12px; }
+td { padding:10px 12px; border-bottom:1px solid #e1dccf; line-height:1.4; font-size:.84rem; vertical-align:middle; }
+tbody tr:nth-child(even) { background:#faf8f2; }
+tbody tr:hover { background:#fff2bc; }
+tbody tr:last-child td { border-bottom:0; }
+td:first-child { font-weight:600; }
+td a { display:inline-block; text-decoration:none; border-bottom:1px solid #7755a4; white-space:nowrap; font-size:.78rem; }
+td a:hover { color:var(--ink); border-color:var(--ink); }
+.numeric,#tabla-historial :is(th,td):nth-child(n+6):nth-child(-n+9),#tabla-productos :is(th,td):last-child,#tabla-items :is(th,td):nth-child(5),#tabla-items :is(th,td):nth-child(6) { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+#tabla-historial td:nth-child(8),#tabla-items td:nth-child(6) { font-weight:750; }
+#tabla-historial td:first-child,#tabla-items td:nth-child(2),#tabla-productos td:first-child { font-family:Consolas,monospace; font-size:.78rem; white-space:nowrap; }
+.status-badge { display:inline-block; padding:3px 8px; font-size:.72rem; border:1px solid #59574c; border-radius:4px; white-space:nowrap; font-weight:650; }
+.status-ok { background:#e4f5b7; color:#344214; }
+.status-pending { background:#fff0b8; color:#5b420b; }
+.status-muted { background:#eeeae6; color:#514b43; }
+td .btn-small { box-shadow:2px 2px 0 var(--ink); padding:5px 9px; font-size:.75rem; }
+.empty-state { padding:34px 18px; font-weight:400; }
+.invoice-total { gap:12px; }
+.invoice-actions { padding:10px 0 0; margin-top:6px; }
+.draft-note { margin:12px 0 0; font-size:.73rem; }
+#sec-admin > .btn-gray,#sec-clientes > .btn-gray,#sec-productos > .btn-gray,#sec-historial > .btn-gray { display:none; }
+@media(min-width:1200px) {
+ #sec-nueva-factura { grid-template-columns:minmax(0,1fr) 300px; column-gap:18px; }
+ #sec-nueva-factura > .invoice-total { padding:12px; }
+}
+@media(max-width:1000px) { .top-fields,.invoice-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:760px) {
+ header { min-height:70px; padding:10px 14px; } .sidebar { top:0; width:100%; padding:6px 10px; }
+ .sidebar .nav-group { display:none; }
+ .sesion-activa > main.container,.sesion-activa > .modulo.container { margin:14px 10px; width:calc(100% - 20px); }
+ .sesion-activa > .modulo.container,.card { padding:14px; } .dashboard-card { padding:0; }
+ .metric-grid { gap:8px; } .metric-grid article { padding:10px; } .metric-grid strong { font-size:1.2rem; } .metric-grid span { font-size:.7rem; }
+ .invoice-grid { display:grid; grid-template-columns:1fr; } .top-fields { grid-template-columns:repeat(2,minmax(0,1fr)); padding:10px; }
+ .top-fields .field { min-width:0; } .top-fields .form-control { width:100%; min-width:0; }
+ .table-scroll { max-height:60vh; } .home-actions .btn { font-size:.8rem; }
+ td,th { padding:9px 10px; } h1 { font-size:1.7rem; }
+}
+@media print { .table-scroll { max-height:none; overflow:visible; box-shadow:none; } th { position:static; } .sesion-activa > main.container { margin:0; width:100%; } }
