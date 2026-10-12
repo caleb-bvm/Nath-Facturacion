@@ -9,6 +9,7 @@ no se deben repetir. Seleccionar la base correspondiente antes de importar.
 
 | Archivo | Cuándo corresponde |
 | --- | --- |
+| `00-base-xampp-antigua.sql` | Base original de XAMPP con IDs sin signo, sin tabla clientes, sin roles en vendedores y sin tablas de correo/accesos. Incluye los cambios 01–03: no aplicarlos de nuevo. Conserva contraseñas y no asigna administradores. Configurar explícitamente roles y horarios después. |
 | `01-roles-y-correo.sql` | No existen el rol y horario en vendedores, ni las tablas de alertas y correo. |
 | `02-configuracion-correo.sql` | Solo falta la tabla `configuracion_correo`. Ya está incluida en 01. |
 | `03-facturas-y-alertas.sql` | Faltan `facturas.solicitud_id` y `accesos.correo_id`. |
