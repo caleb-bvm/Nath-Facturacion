@@ -7,6 +7,12 @@ Node.js, Composer ni importar archivos SQL manualmente en el servidor.
 ## Funciones
 
 - Facturas de consumidor final y crédito fiscal, con descarga en PDF y envío por correo.
+- Resumen después de guardar: consulta los datos y totales, crea una nueva factura,
+  vuelve al inicio o descarga el PDF cuando lo necesites, sin descarga automática.
+- Consulta de detalles desde el historial y las ventas recientes dentro del sitio:
+  cliente, productos, cantidades, precios, IVA, comisión y total.
+- PDF A4 con la identidad visual de Minina, tabla de productos, totales destacados,
+  encabezados y numeración de páginas. Admite textos largos y facturas de varias páginas.
 - Registro y edición de clientes. Las facturas anteriores conservan los datos del cliente
   que tenían al emitirse. El crédito fiscal requiere NIT y NRC.
 - Catálogos de productos y sucursales administrados desde el panel.
@@ -17,6 +23,22 @@ Node.js, Composer ni importar archivos SQL manualmente en el servidor.
 Los empleados pueden consultar su horario autorizado en el inicio. Los horarios usan
 la zona `America/El_Salvador`; la hora de salida no está incluida y los turnos nocturnos
 pertenecen al día en que comenzaron. Un administrador activo tiene acceso las 24 horas.
+El desglose de edad se muestra únicamente en la información personal; no aparece
+en la factura.
+
+## Emitir y consultar una factura
+
+1. En **Nueva factura**, selecciona la sucursal, el cliente, el tipo de documento
+   y los productos con sus cantidades.
+2. Pulsa **Guardar factura**. El sistema guarda la venta y abre su resumen dentro
+   del sitio, con los datos e importes registrados por el servidor.
+3. Elige **Nueva factura**, **Volver al inicio** o **Descargar PDF**.
+   Si falla la carga del resumen, usa **Reintentar resumen**; la venta ya está guardada.
+
+Para consultar una venta anterior, pulsa **Ver detalle** en las ventas recientes
+o en el historial. La ventana muestra los datos de la factura y permite descargar
+el PDF opcionalmente. Cada empleado conserva acceso únicamente a sus propias ventas.
+El envío por correo mantiene el PDF adjunto, según la configuración del servicio.
 
 ## Cálculos de facturación
 
@@ -123,9 +145,12 @@ necesitas PHP y Node.js disponibles localmente:
 
 ```sh
 php tests/logica.php
+php tests/pdf.php
 node tests/calculos.mjs
 ```
 
 Las pruebas de API y migración necesitan una base desechable llamada
 `facturacion_pruebas`. La preparación reinicia esa base; sigue la
 [guía de pruebas](tests/README.md) para configurarla y ejecutar la suite completa.
+La prueba de PDF genera ejemplos en `output/pdf/` para comprobar visualmente una
+factura simple y otra de varias páginas. Estas exportaciones no se incluyen en Git.
