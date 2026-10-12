@@ -6,10 +6,13 @@ Sin base de datos:
 
 ```sh
 php tests/logica.php
+php tests/pdf.php
 node tests/calculos.mjs
 ```
 
 La comparación usa `php` del PATH; se puede indicar otra ruta con `PHP_BINARY`.
+La prueba PDF genera ejemplos de una página y de crédito fiscal con 70 productos
+en `output/pdf/`, sin consultar MySQL ni enviar correos, para revisar su diseño.
 
 Para probar la API, usar una instancia **desechable** de MySQL/MariaDB local:
 
