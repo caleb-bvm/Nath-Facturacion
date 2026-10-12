@@ -49,6 +49,7 @@ const BaseDatos = {
     login(usuario, clave) { return this.enviar('login', {usuario, clave}); },
     getCatalogs() { return this.solicitar(`${API_URL}?action=catalogs`); },
     getInvoices() { return this.solicitar(`${API_URL}?action=invoices`); },
+    getInvoice(id) { return this.solicitar(`${API_URL}?action=invoice&id=${encodeURIComponent(id)}`); },
     getProducts() { return this.solicitar(`${API_URL}?action=products`); },
     saveProduct(producto) { return this.enviar('save_product', producto); },
     saveInvoice(factura) { return this.enviar('save_invoice', factura); }

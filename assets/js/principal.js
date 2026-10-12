@@ -59,7 +59,7 @@ async function iniciarSesion() {
         document.getElementById('lbl-fecha-operacion').textContent = fechaTexto(fechaActual);
         document.getElementById('fac-fecha').value = fechaTexto(fechaActual).toUpperCase();
 
-        /* Desglose de edad del usuario: mostrar los mismos datos en panel y factura. */
+        /* Desglose de edad del usuario en su panel de información personal. */
         const edadObj = calcEdad.calcular(vendedorActual.fecha_nacimiento, fechaActual);
         const unidadEdad = (cantidad, singular, plural) => `${cantidad} ${cantidad === 1 ? singular : plural}`;
         const desgloseEdad = [
@@ -72,7 +72,6 @@ async function iniciarSesion() {
         const edadLabel = document.getElementById('lbl-edad-vendedor');
         edadLabel.textContent = `Usuario: ${vendedorActual.usuario} | ${desgloseEdad} | ${mensajeCumpleanos}`;
         edadLabel.classList.toggle('birthday-message', mensajeCumpleanos.startsWith('¡Feliz cumpleaños!'));
-        document.getElementById('lbl-footer-edad').textContent = desgloseEdad;
 
         // Cargar catálogos desde MySQL a través de la API
         await cargarCatalogos();
@@ -92,6 +91,8 @@ async function logout() {
 }
 
 function limpiarSesion() {
+    cerrarResumenFactura();
+    cerrarDetalleFactura();
     document.body.classList.remove('sesion-activa');
     document.getElementById('navegacion').hidden = true;
     guardandoFactura = false;
@@ -228,7 +229,7 @@ async function mostrarHistorial() {
                 <td>$${Number(f.iva).toFixed(2)}</td>
                 <td>$${Number(f.total).toFixed(2)}</td>
                 <td>${Number(f.comision).toFixed(2)} (${Number(f.comision_porcentaje)}%)</td>
-                <td><a href="${API_URL}?action=pdf&id=${Number(f.id)}" target="_blank" rel="noopener">Descargar PDF</a></td>
+                <td><button class="btn btn-small btn-gray" onclick="verDetalleFactura(${Number(f.id)})">Ver detalle</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -402,12 +403,10 @@ async function guardarFacturaBD() {
     if (res.success) {
         document.getElementById('lbl-nro-doc').textContent = res.numero;
         mostrarAviso(`${res.numero}: ${res.message}`, 'exito');
-        window.open(API_URL + '?action=pdf&id=' + res.id, '_blank');
 
         itemsFactura = [];
         solicitudFactura = '';
-        cancelarFactura();
-        await actualizarInicio();
+        await mostrarResumenFactura(res.id, res.message);
     } else {
         mostrarAviso('Error al registrar la factura: ' + res.message);
     }

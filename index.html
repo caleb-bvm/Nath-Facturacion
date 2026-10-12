@@ -53,7 +53,7 @@
                 <p>Fecha de operación: <strong id="lbl-fecha-operacion"></strong></p>
 <div class="home-actions"><button class="btn" onclick="navegarMinina('factura')">＋ Nueva factura</button><button class="btn btn-gray" onclick="navegarMinina('ventas')">Ver ventas ↗</button></div>
 <div class="metric-grid" aria-label="Resumen del día"><article><span>Ventas de hoy</span><strong id="resumen-total">—</strong></article><article><span>Facturas de hoy</span><strong id="resumen-cantidad">—</strong></article><article><span>Promedio por factura hoy</span><strong id="resumen-promedio">—</strong></article></div>
-<p id="resumen-estado" role="status"></p><h2>Ventas recientes</h2><div class="table-scroll" tabindex="0"><table id="tabla-recientes"><thead><tr><th>Documento</th><th>Fecha</th><th>Cliente</th><th class="numeric">Total</th><th>Documento PDF</th></tr></thead><tbody></tbody></table></div>
+<p id="resumen-estado" role="status"></p><h2>Ventas recientes</h2><div class="table-scroll" tabindex="0"><table id="tabla-recientes"><thead><tr><th>Documento</th><th>Fecha</th><th>Cliente</th><th class="numeric">Total</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>
 <details class="personal-details"><summary>Mi información y horario</summary>                <div id="lbl-edad-vendedor" class="info-bar"></div>
                 <!-- Horario personal: datos informativos sin campos de edición. -->
                 <section class="personal-schedule" aria-labelledby="titulo-mi-horario">
@@ -133,7 +133,6 @@
                 <div class="invoice-total">
                     <div class="footer-data">
                         <p><strong>Usuario:</strong> <input id="lbl-footer-user" class="small-input" value="" readonly></p>
-                        <p><strong>Desglose de edad:</strong> <span id="lbl-footer-edad" class="age-breakdown"></span></p>
                     </div>
                     <div class="totals">
                         <p>Base sin IVA: <strong>$<span id="lbl-subtotal">0.00</span></strong></p>
@@ -148,10 +147,22 @@
                 </div>
             </section>
 
+            <section id="sec-resumen-factura" class="card" hidden aria-labelledby="resumen-factura-titulo">
+                <p class="eyebrow">FACTURA GUARDADA</p>
+                <h2 id="resumen-factura-titulo" tabindex="-1">Resumen de factura</h2>
+                <p id="resumen-factura-mensaje" role="status">La factura se guardó correctamente.</p>
+                <div class="invoice-summary-actions">
+                    <button class="btn" type="button" onclick="navegarMinina('factura')">＋ Nueva factura</button>
+                    <button class="btn btn-gray" type="button" onclick="navegarMinina('inicio')">Volver al inicio</button>
+                    <a id="resumen-factura-pdf" class="btn btn-gray" hidden>Descargar PDF</a>
+                </div>
+                <div id="resumen-factura-contenido" aria-live="polite"></div>
+            </section>
+
             <section id="sec-historial" class="card" style="display: none;">
                 <h2>Historial de Ventas</h2><div class="list-toolbar"><label for="buscar-sec-historial">Buscar</label><input id="buscar-sec-historial" class="form-control" type="search" placeholder="Documento, cliente, sucursal o fecha…" data-tabla="#tabla-historial" oninput="filtrarTabla(this, this.dataset.tabla)"><span role="status" aria-live="polite"></span></div>
                 <div class="table-scroll" role="region" aria-label="Historial de ventas" tabindex="0"><table id="tabla-historial">
-                    <thead><tr><th>Documento</th><th>Fecha</th><th>Sucursal</th><th>Cliente</th><th>Vendedor</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Comisión</th><th>PDF</th></tr></thead>
+                    <thead><tr><th>Documento</th><th>Fecha</th><th>Sucursal</th><th>Cliente</th><th>Vendedor</th><th>Subtotal</th><th>IVA</th><th>Total</th><th>Comisión</th><th>Acciones</th></tr></thead>
                     <tbody></tbody>
                 </table></div>
                 <button class="btn btn-gray no-print" onclick="cancelarFactura()">Volver</button>
@@ -241,6 +252,14 @@
       <button class="btn btn-gray" onclick="cerrarModulos()">Volver</button>
     </section>
     <aside id="aviso" class="aviso no-print" hidden><span id="aviso-texto" role="status" aria-live="polite"></span><button class="btn-texto" type="button" aria-label="Cerrar mensaje" onclick="document.getElementById('aviso').hidden = true">Cerrar</button></aside>
+    <dialog id="detalle-factura" class="invoice-dialog" aria-labelledby="detalle-factura-titulo">
+        <div class="invoice-dialog-header">
+            <div><p class="eyebrow">MININA · FACTURACIÓN</p><h2 id="detalle-factura-titulo">Detalle de factura</h2></div>
+            <button class="btn btn-small btn-gray" type="button" onclick="cerrarDetalleFactura()" autofocus>Cerrar</button>
+        </div>
+        <div id="detalle-factura-contenido" aria-live="polite"></div>
+        <div class="invoice-dialog-actions"><a id="detalle-factura-pdf" class="btn" hidden>Descargar PDF</a></div>
+    </dialog>
     <script src="assets/js/interfaz.js"></script>
     <script src="assets/js/calculos/Calculo.js"></script>
     <script src="assets/js/calculos/CalculoMonetario.js"></script>
@@ -257,5 +276,6 @@
     <script src="assets/js/principal.js"></script>
     <script src="assets/js/paneles.js"></script>
     <script src="assets/js/clientes.js"></script><script src="assets/js/minina.js"></script>
+    <script src="assets/js/detalle-factura.js"></script>
 </body>
 </html>

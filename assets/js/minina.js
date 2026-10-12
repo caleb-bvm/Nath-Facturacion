@@ -13,6 +13,7 @@ function marcarVistaMinina(vista) {
 async function navegarMinina(vista) {
     if (!vendedorActual || guardandoFactura) return;
     if (['equipo', 'sucursales', 'correo', 'actividad', 'productos'].includes(vista) && vendedorActual.rol !== 'admin') return;
+    cerrarResumenFactura();
     document.querySelectorAll('.modulo').forEach(elemento => elemento.hidden = true);
     document.getElementById('view-dashboard').style.display = 'block';
     const acciones = { inicio: cancelarFactura, factura: mostrarSeccionNuevaFactura, ventas: mostrarHistorial, productos: mostrarProductos, clientes: mostrarClientes };
@@ -108,7 +109,7 @@ async function actualizarInicio() {
     document.getElementById('resumen-cantidad').textContent = hoy.length;
     document.getElementById('resumen-promedio').textContent = dineroMinina(hoy.length ? total / hoy.length : 0);
     estado.textContent = vendedorActual.rol === 'admin' ? 'Ventas de todas las sucursales.' : 'Resumen de tus ventas.';
-    document.querySelector('#tabla-recientes tbody').innerHTML = r.facturas.slice(0, 7).map(f => `<tr><td>${escaparHtml(f.numero)}</td><td>${escaparHtml(f.fecha)}</td><td>${escaparHtml(f.cliente || 'Sin cliente registrado')}</td><td class="numeric">${dineroMinina(f.total)}</td><td><a href="${API_URL}?action=pdf&id=${Number(f.id)}" target="_blank" rel="noopener">Descargar PDF ↗</a></td></tr>`).join('') || '<tr><td colspan="5" class="empty-state">Tu primera venta empieza con Nueva factura.</td></tr>';
+    document.querySelector('#tabla-recientes tbody').innerHTML = r.facturas.slice(0, 7).map(f => `<tr><td>${escaparHtml(f.numero)}</td><td>${escaparHtml(f.fecha)}</td><td>${escaparHtml(f.cliente || 'Sin cliente registrado')}</td><td class="numeric">${dineroMinina(f.total)}</td><td><button class="btn btn-small btn-gray" onclick="verDetalleFactura(${Number(f.id)})">Ver detalle</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty-state">Tu primera venta empieza con Nueva factura.</td></tr>';
 }
 
 function dineroMinina(valor) { return new Intl.NumberFormat('es-SV', {style:'currency',currency:'USD'}).format(Number(valor)); }
